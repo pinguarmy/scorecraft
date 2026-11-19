@@ -1,0 +1,3 @@
+# Keep the original formatting in upstream attribution files.
+public/audio/piano/README -text -whitespace
+public/audio/instruments/UPSTREAM-* -text -whitespace

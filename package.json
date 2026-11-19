@@ -1,0 +1,50 @@
+{
+  "name": "scorecraft",
+  "version": "0.6.5",
+  "private": true,
+  "type": "module",
+  "description": "Local-first open-source sheet music scanning and practice desk",
+  "license": "AGPL-3.0-or-later",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:server": "tsx watch server/index.ts",
+    "dev:web": "vite --host 127.0.0.1 --port 4380",
+    "build": "tsc --noEmit && vite build",
+    "start": "tsx server/index.ts",
+    "setup:omr": "node scripts/setup-audiveris.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "package:source": "node scripts/package-source.mjs",
+    "test:music": "tsx --test tests/music/*.test.ts",
+    "test:server": "tsx --test tests/server/*.test.ts",
+    "test:practice": "tsx --test tests/practice/*.test.ts",
+    "test:e2e:update": "playwright test tests/e2e/update.spec.ts tests/e2e/migration.spec.ts tests/e2e/cursor.spec.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:v03": "playwright test tests/e2e/excerpt-count-in.spec.ts",
+    "test:e2e:piano": "playwright test tests/e2e/sampled-piano.spec.ts",
+    "test:e2e:novice": "playwright test tests/e2e/novice-practice.spec.ts",
+    "test:e2e:instruments": "playwright test tests/e2e/multi-instruments.spec.ts",
+    "test": "npm run test:music && npm run test:server && npm run test:practice"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "^0.8.11",
+    "express": "^5.1.0",
+    "fflate": "^0.8.2",
+    "multer": "^2.0.2",
+    "opensheetmusicdisplay": "^1.9.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/express": "^5.0.3",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^24.3.0",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.3"
+  }
+}
