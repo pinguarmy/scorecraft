@@ -1,0 +1,229 @@
+/* ==========================================================================
+   LAYOUT OVERRIDES: ACCESSIBLE TRANSPORT & PROGRESSIVE DISCLOSURE INSPECTOR
+   ========================================================================== */
+
+/* --- General Focus & Native Disclosure Accessibility --- */
+details summary {
+  cursor: pointer;
+  user-select: none;
+}
+details summary:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Original preview image / PDF height constraint */
+.original-preview img {
+  max-height: 420px;
+}
+.original-preview object {
+  height: 420px;
+}
+
+/* --- Parts Section (Chinese 只听 / 静音 & Clean 3-item layout) --- */
+.parts-section {
+  border-top: 1px solid var(--line);
+  padding: 16px 0;
+}
+.parts-section .section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.parts-section .parts-list {
+  margin-top: 8px;
+}
+.parts-section .part-row,
+.part-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e3e3d8;
+  min-width: 0;
+}
+.parts-section .part-name,
+.part-name {
+  flex: 1 1 auto;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #55694b;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
+}
+.parts-section .part-button,
+.part-button {
+  width: auto;
+  min-width: 44px;
+  height: auto;
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  border: 1px solid #d3d8c5;
+  border-radius: 3px;
+  color: #6d7d65;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.parts-section .part-button:hover,
+.part-button:hover {
+  border-color: #a5b497;
+  color: var(--ink);
+}
+.parts-section .part-button.active,
+.parts-section .part-button.selected,
+.part-button.active,
+.part-button.selected {
+  background: #586f4b;
+  border-color: #586f4b;
+  color: white;
+}
+
+.part-instrument-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid #e7e6dc;
+  font-size: 12px;
+  color: #6d7764;
+}
+.part-instrument-field span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.part-instrument-field select {
+  flex: 0 1 160px;
+  min-width: 120px;
+  border: 1px solid #d4dac5;
+  border-radius: 3px;
+  background: #f9f7ef;
+  padding: 7px 6px;
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.part-instrument-label { display: flex; align-items: center; gap: 8px; flex-basis: 100%; min-width: 0; font-size: 11px; color: #6d7764; margin-top: 4px; }
+.part-instrument-label select { flex: 1; min-width: 0; width: 100%; border: 1px solid #d4dac5; border-radius: 3px; background: #f9f7ef; padding: 7px 6px; color: var(--ink); font-size: 12px; }
+.part-instrument-label[hidden] { display: none; }
+.arrangement-controls { display: grid; grid-template-columns: 1fr; gap: 8px; margin: 12px 0 15px; }
+.arrangement-controls > label { font-size: 11px; color: #6d7764; }
+.arrangement-controls > select { min-width: 0; width: 100%; border: 1px solid #d4dac5; border-radius: 3px; background: #f9f7ef; padding: 8px 6px; color: var(--ink); font-size: 12px; }
+.arrangement-controls .micro-copy { margin-top: 1px; font-size: 10px; }
+.instrument-details-toggle { text-align: left; padding: 5px 0; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.instrument-warnings { margin-top: 10px; padding-left: 9px; border-left: 2px solid var(--red); }
+
+.mobile-library-toggle {
+  display: none;
+}
+.review-notice {
+  margin: 10px 0 14px;
+  padding: 8px 12px;
+  background: #f8f6ee;
+  border: 1px solid #e2ded2;
+  border-radius: 3px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #55664d;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.review-notice.has-warnings {
+  background: #fbf1ef;
+  border-color: #eed6d0;
+  border-left: 3px solid var(--red);
+  color: #8c3b28;
+}
+.review-notice button {
+  font-size: 13px;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+.open-original-button {
+  margin: 8px 0 14px;
+  font-size: 12px;
+}
+.library-management {
+  border-top: 1px solid var(--line);
+  padding: 12px 0;
+  margin-top: 12px;
+}
+.library-management summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6d7764;
+  padding: 6px 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.library-management summary::after {
+  content: '＋';
+  color: var(--sage);
+}
+.library-management[open] summary::after {
+  content: '−';
+}
+.library-management summary:hover {
+  color: var(--red);
+}
+.saved-document-list li button[data-document-id],
+.saved-document-list li button.recent-item {
+  width: 100%;
+}
+.saved-library { margin: 16px 0; border-block: 1px solid var(--line); padding: 13px 0; }
+.saved-library > summary { cursor: pointer; font-size: 13px; font-weight: 600; list-style: none; display: flex; justify-content: space-between; }
+.saved-document-list { list-style: none; padding: 0; margin: 8px -7px 0; max-height: 340px; overflow-y: auto; }
+.saved-library .recent-item { font-size: 12px; }
+.unsaved-badge {
+  display: inline-block;
+  background: #fbf1ef;
+  color: #bd4d35;
+  border: 1px solid #eecbc4;
+  border-radius: 2px;
+  padding: 0 4px;
+  font-size: 10px;
+  line-height: 1.4;
+  font-weight: 500;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.library-save-status { margin: -10px 0 18px; display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 11px; line-height: 1.8; color: #617459; }
+.library-save-status.error, .library-save-status.conflict { color: #a44330; }
+.library-save-status small { flex-basis: 100%; color: #77806e; font-size: 10px; }
+.library-save-status .text-button { text-decoration: underline; text-underline-offset: 3px; }
+@media(max-width:760px) { .saved-library { grid-column: 1 / 3; } }
+@media print { .library-save-status { display: none!important; } }
+
+/* Metadata rename form in parts */
+.metadata-form.part-rename-form {
+  margin: 12px 0 16px;
+  padding: 12px;
+  grid-template-columns: 1fr;
+}
+.metadata-form.part-rename-form > div {
+  grid-column: 1;
+}
+

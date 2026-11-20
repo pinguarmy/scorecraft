@@ -1,0 +1,122 @@
+/* --- High-Frequency Practice Area (#current-practice) --- */
+#current-practice,
+.current-practice {
+  display: block;
+  padding: 0 0 12px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.current-practice .section-heading {
+  margin-bottom: 8px;
+}
+.current-practice .section-heading h2 {
+  font-size: 14px;
+}
+.current-practice .tempo-presets {
+  padding: 4px 0 8px;
+  gap: 6px;
+}
+.current-practice .tempo-presets small {
+  display: none; /* keep high frequency practice area tight */
+}
+.current-practice .segment-settings,
+.current-practice .transpose-settings {
+  padding: 8px 0;
+  border-top: 1px solid #e5e3d8;
+}
+.current-practice .segment-settings > h3,
+.current-practice .transpose-settings > h3,
+.current-practice .parts-section .section-heading > h3 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #55664d;
+  margin: 0 0 6px;
+}
+.current-practice .segment-settings .inspector-section,
+.current-practice .transpose-settings .inspector-section {
+  padding: 0;
+  border-top: 0;
+}
+.current-practice .segment-settings .inspector-copy,
+.current-practice .segment-settings .section-heading,
+.current-practice .transpose-settings .section-heading {
+  display: none; /* remove repetitive h2 and copy */
+}
+.current-practice .quick-loop-button {
+  margin: 2px 0 8px;
+  font-size: 12px;
+  min-height: 34px;
+}
+.current-practice .loop-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.current-practice .loop-range label {
+  font-size: 11px;
+  color: #828b77;
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+.current-practice .loop-range > span {
+  padding: 0;
+  color: #9ba18e;
+  font-size: 11px;
+}
+.current-practice .loop-range input {
+  width: 100%;
+  border: 1px solid #d8dbcb;
+  background: #f9f7f0;
+  border-radius: 3px;
+  text-align: center;
+  color: #53664a;
+  height: 32px;
+  font-family: Georgia, serif;
+  font-size: 14px;
+}
+.current-practice .transpose-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #6f8064;
+  font-size: 12px;
+  margin: 4px 0;
+}
+.current-practice .practice-clicks {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid #e5e3d8;
+}
+.current-practice .practice-clicks .metronome-button {
+  margin: 0;
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid #d4d8c6;
+}
+.current-practice .practice-clicks .count-in-control {
+  border-top: 0;
+  padding-top: 0;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+}
+.current-practice .practice-clicks .count-in-control .micro-copy {
+  display: none;
+}
+.current-practice .parts-section {
+  border-top: 1px solid #e5e3d8;
+  padding: 8px 0 4px;
+}
+.current-practice .measure-jump {
+  padding: 8px 0 0;
+  border-top: 1px solid #e5e3d8;
+  margin-top: 6px;
+}
+

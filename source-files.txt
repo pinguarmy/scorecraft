@@ -103,6 +103,7 @@ public/audio/piano/LICENSE.txt
 public/audio/piano/README
 public/audio/piano/README.md
 public/audio/piano/source-manifest.json
+public/favicon.svg
 public/samples/README.md
 public/samples/first-light.musicxml
 public/samples/first-light.pdf
@@ -123,6 +124,7 @@ server/job-files.ts
 server/library.ts
 source-files.txt
 src/App.tsx
+src/components/ErrorBoundary.tsx
 src/components/ScoreView.tsx
 src/components/render-compat.ts
 src/components/score-follow.ts
@@ -143,7 +145,16 @@ src/music/score-details.ts
 src/music/types.ts
 src/practice/library.ts
 src/practice/session.ts
-src/styles.css
+src/styles/01-base-and-components.css
+src/styles/02-breakpoints-original.css
+src/styles/03-scan-library-count-in-audio-status.css
+src/styles/04-restructure-accessibility-parts-saved-library.css
+src/styles/05-restructure-current-practice.css
+src/styles/06-restructure-disclosures-inspector-transport.css
+src/styles/07-restructure-viewport-layouts.css
+src/styles/08-reduced-motion-and-print.css
+src/styles/09-error-boundary.css
+src/styles/index.css
 tests/browser.ts
 tests/e2e/cursor.spec.ts
 tests/e2e/excerpt-count-in.spec.ts

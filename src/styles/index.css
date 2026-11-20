@@ -1,0 +1,19 @@
+/* Partials are imported in original cascade order; concatenating 01-08 reproduces the former src/styles.css byte for byte. */
+/* 01 base: tokens, reset, masthead, library, desk, transport, inspector and the first components */
+@import './01-base-and-components.css';
+/* 02 the original responsive blocks (>=1550, <=1180, <=760, <=370) as first written */
+@import './02-breakpoints-original.css';
+/* 03 later appended features: scan library, metadata form, count-in, audio status */
+@import './03-scan-library-count-in-audio-status.css';
+/* 04 start of the layout restructure: focus/disclosure a11y, parts, review notice, saved library */
+@import './04-restructure-accessibility-parts-saved-library.css';
+/* 05 restructure: the high-frequency #current-practice area */
+@import './05-restructure-current-practice.css';
+/* 06 restructure: practice disclosures, score-follow, inspector settings, mobile tools hooks, playback options */
+@import './06-restructure-disclosures-inspector-transport.css';
+/* 07 restructure: viewport layouts (>=1000, <=999 transport dock, 761-999, <=760) */
+@import './07-restructure-viewport-layouts.css';
+/* 08 reduced-motion and print rules */
+@import './08-reduced-motion-and-print.css';
+/* 09 new: error boundary fallback */
+@import './09-error-boundary.css';
