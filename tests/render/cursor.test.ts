@@ -1,3 +1,4 @@
+import { browserLaunchOptions } from '../browser.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { chromium } from '@playwright/test';
@@ -9,7 +10,7 @@ const xml = `<?xml version="1.0"?><score-partwise version="4.0"><part-list><scor
 
 test('cursor maps canonical bar identity, not accumulated engraving timestamps, and reverses on seek', async () => {
   const compiled = ts.transpileModule(await readFile('src/components/render-compat.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
-  const browser = await chromium.launch({ channel: 'chrome', headless: true });
+  const browser = await chromium.launch(browserLaunchOptions());
   try {
     const page = await browser.newPage();
     await page.setContent('<div id="score" style="position:relative;width:900px"></div>');

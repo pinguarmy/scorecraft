@@ -1,3 +1,4 @@
+import { browserLaunchOptions } from '../browser.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { chromium } from '@playwright/test';
@@ -12,7 +13,7 @@ const xml = `<?xml version="1.0"?><score-partwise version="4.0"><part-list><scor
 async function compiled(file: string) { return ts.transpileModule(await readFile(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText; }
 
 test('native SVG pages turn horizontally with actual cursor and vertical follow respects pause/disable', async () => {
-  const browser = await chromium.launch({ channel: 'chrome', headless: true });
+  const browser = await chromium.launch(browserLaunchOptions());
   try {
     const page = await browser.newPage({ viewport: { width: 1100, height: 800 }, reducedMotion: 'reduce' });
     await page.setContent('<style>*{box-sizing:border-box}body{margin:0}#frame{width:760px;margin-left:40px;position:relative}#host{width:100%;padding:15px 25px 30px}#host svg{max-width:100%;height:auto}#host>div{max-width:100%}</style><div style="height:150px"></div><div id="frame"><div id="host"></div></div><div style="height:700px"></div>');

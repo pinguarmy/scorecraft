@@ -1,3 +1,4 @@
+import { browserLaunchOptions } from '../browser.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { chromium } from '@playwright/test';
@@ -12,7 +13,7 @@ test('actual ScoreView retains thin red cursor on initial load, new document, an
     stdin: { contents: `import React from 'react'; import { createRoot } from 'react-dom/client'; import ScoreView from './src/components/ScoreView'; import { OpenSheetMusicDisplay, CursorType } from 'opensheetmusicdisplay'; const root = createRoot(document.getElementById('app')); window.mount = (xml, followMode) => root.render(React.createElement(ScoreView, { xml, followMode, followEnabled: false, position: 0, playing: false, selectedNoteId: null, onSelectNote: () => {}, onSeek: () => {} })); const originalSetOptions = OpenSheetMusicDisplay.prototype.setOptions; OpenSheetMusicDisplay.prototype.setOptions = function(options) { window.currentOSMD = this; return originalSetOptions.call(this, options); }; window.OSMD = OpenSheetMusicDisplay; window.CursorType = CursorType;`, resolveDir: process.cwd(), loader: 'tsx' },
     bundle: true, write: false, platform: 'browser', format: 'iife', jsx: 'automatic', define: { 'process.env.NODE_ENV': '"production"' },
   });
-  const browser = await chromium.launch({ channel: 'chrome', headless: true });
+  const browser = await chromium.launch(browserLaunchOptions());
   try {
     const page = await browser.newPage({ viewport: { width: 1100, height: 800 } });
     await page.setContent('<style>*{box-sizing:border-box}#app{width:760px;position:relative}.score-render-host{width:100%;padding:15px 25px 30px}.score-render-host svg{max-width:100%;height:auto}.score-render-host>div{max-width:100%}</style><div id="app"></div><div id="legacy"></div>');
