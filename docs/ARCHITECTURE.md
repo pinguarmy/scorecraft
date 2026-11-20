@@ -15,11 +15,18 @@ PDF / PNG / JPEG → 本机服务 → Audiveris → MusicXML
 
 | 路径 | 负责什么 |
 | --- | --- |
-| [App.tsx](<../src/App.tsx>) | 导入、谱库、练习面板、校对与导出。 |
+| [App.tsx](<../src/App.tsx>) | 组合根。只保留跨模块的编排：当前打开的乐谱、切换乐谱和保存当前练习。 |
+| [src/app/](<../src/app>) | 按职责拆开的 hooks：谱库与保存队列、播放器、练习设置、打开乐谱的几条流程、校对、配器、导出、扫描档案、移动端工具面板。不依赖 React 的纯函数也放在这里，并有单元测试。 |
+| [src/components/](<../src/components>) | 页面区域：刊头、谱库侧栏、扫描档案、谱面区、播放条，以及练习、声音、校对和导出面板。 |
 | [ScoreView.tsx](<../src/components/ScoreView.tsx>) | 用 OpenSheetMusicDisplay 把乐谱画成 SVG，并让游标跟随源谱位置。 |
+| [api/scorecraft.ts](<../src/api/scorecraft.ts>) | 前端调用本机服务的唯一入口，带类型的健康检查、扫描任务和识谱接口。 |
 | [music/index.ts](<../src/music/index.ts>) | 读取 MusicXML/MXL，解析音高、时值、节拍和谱表。普通反复展开为演奏顺序，不改变源谱。 |
+| [practice/](<../src/practice>) | 练习会话的校验，以及谱库保存器和浏览器发件箱。服务端也用这里的会话校验。 |
+| [src/styles/](<../src/styles>) | 样式分片，由 `index.css` 按顺序引入。后面的分片会覆盖前面的，顺序不能随意调整。 |
 | [app.ts](<../server/app.ts>) | 提供本机 API，接收扫描文件、管理识谱队列和保存乐谱。 |
 | [library.ts](<../server/library.ts>) | 把校正版和练习设置写入本机谱库，以及处理并发保存冲突。 |
+
+页面最外层有一个错误边界。渲染出错时显示说明和重新载入按钮，而不是空白页。
 
 音频在浏览器通过 Web Audio 播放。录音乐器读取随项目提供的采样，不调用远程音色服务；合成器、电子鼓和节拍器由代码生成。WAV 导出使用离线 Web Audio 渲染。MIDI 导出的是音符和演奏指令，不包含录音。
 
