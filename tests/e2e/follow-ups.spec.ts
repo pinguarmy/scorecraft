@@ -234,3 +234,49 @@ test('the two dock buttons announce a dialog and open it where their labels say'
   await expect(sheet).toBeVisible();
   await expect(sheet.locator('#current-practice-title')).toBeInViewport();
 });
+
+test('a field that was focused but not edited follows outside changes and never writes its old text back', async ({
+  page,
+}) => {
+  await openDemo(page);
+  const tempo = page.getByRole('spinbutton', { name: '速度', exact: true });
+  const slider = page.getByLabel('调整速度');
+  const paperMeta = page.locator('.paper-meta');
+  await expect(tempo).toHaveValue('88');
+
+  // Focus the field without typing, then change the tempo from elsewhere while it still has focus.
+  await tempo.focus();
+  await slider.evaluate((element) => {
+    const input = element as HTMLInputElement;
+    const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
+    setValue.call(input, '100');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await expect(tempo).toBeFocused();
+  await expect(paperMeta).toContainText('100 BPM');
+  await expect(tempo).toHaveValue('100');
+
+  // Leaving the field must not commit the text it showed before the change.
+  await tempo.blur();
+  await expect(tempo).toHaveValue('100');
+  await expect(slider).toHaveValue('100');
+  await expect(paperMeta).toContainText('100 BPM');
+});
+
+test('a hint that appears on leaving a field does not swallow the click that caused it', async ({ page }) => {
+  await openDemo(page);
+  const end = page.getByRole('spinbutton', { name: '循环结束小节' });
+  const loop = page.getByRole('button', { name: '循环这几小节' });
+  await expect(loop).toHaveAttribute('aria-pressed', 'false');
+
+  // First Light has 8 measures, so 34 is corrected to 8 when the field loses focus. The hint is inserted
+  // above the loop switch; it must not move the switch away between pressing and releasing the mouse.
+  await end.click();
+  await end.press('ControlOrMeta+a');
+  await end.pressSequentially('34');
+  await loop.click();
+
+  await expect(loop).toHaveAttribute('aria-pressed', 'true');
+  await expect(end).toHaveValue('8');
+  await expect(page.locator('#loop-range-error')).toContainText('已改为 8');
+});
