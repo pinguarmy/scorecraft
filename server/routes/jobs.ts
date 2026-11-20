@@ -6,6 +6,9 @@ import { assertPlainPath, openOriginal } from '../job-files.js';
 import { MAX_RESULT_BYTES, RESULT_EXTENSION, RETENTION_DAYS } from '../job-store.js';
 import { lookupJob, type JobRouteContext } from './context.js';
 
+/** How long DELETE waits for a reader that has just finished to release the job. */
+const PIN_GRACE_MS = 250;
+
 /** Reading and deleting jobs: the list, one job, its original scan and its MusicXML result. */
 export function createJobsRouter(context: JobRouteContext) {
   const { canonicalRoot, data, maxUploadBytes, maxStored, store } = context;
@@ -101,6 +104,12 @@ export function createJobsRouter(context: JobRouteContext) {
     if (!job) return;
     if (job.status === 'queued' || job.status === 'running') {
       res.status(409).json({ message: '正在排队或识别的任务不能删除，请等待识别结束。' });
+      return;
+    }
+    // A reader that has just finished is still pinned for a moment; wait briefly before calling it busy.
+    await store.whenUnpinned(job.id, PIN_GRACE_MS);
+    if (store.jobs.get(job.id) !== job) {
+      res.status(404).json({ message: '任务不存在。' });
       return;
     }
     if (store.deleting.has(job.id) || store.isPinned(job.id)) {
