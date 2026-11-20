@@ -1,0 +1,112 @@
+/* Follow-ups after the App split: field hints, legibility floors and touch targets.
+   Later than every other partial on purpose; only sizes and spacing change here, not the look. */
+
+/* --- Number field hints (tempo, loop range), styled like the jump-to-measure hint --- */
+.field-error {
+  margin: 6px 0 0;
+  color: #9c452e;
+  font-size: 11px;
+  line-height: 1.7;
+}
+@media (max-width: 999px) {
+  /* The phone dock has a fixed height, so the tempo hint sits just above it instead of inside it. */
+  section.transport .transport-core > .field-error {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: calc(100% + 6px);
+    margin: 0;
+    padding: 6px 10px;
+    background: #fffdf8;
+    border: 1px solid #e3cfc5;
+    border-radius: 3px;
+    box-shadow: 0 6px 16px -12px rgba(45, 45, 32, 0.4);
+  }
+}
+
+/* --- Legibility floors ---
+   The print-like scale stays; only text that was 7–9px comes up.
+   Small caps, key caps and units: at least 10px. */
+.eyebrow,
+.desk-topline,
+.desk-topline .eyebrow,
+.empty-score > .eyebrow,
+.score-source,
+.paper-meta,
+.paper-footer,
+.library-foot > span,
+.timeline-labels,
+kbd,
+.tempo-control > div > span,
+.stepper small,
+.export-buttons span,
+.note-original small,
+.scan-status,
+.file-hint,
+.engine-panel p {
+  font-size: 10px;
+}
+
+/* Sentences and small controls a person has to read: 11px. */
+.text-button,
+.toggle-row,
+.edit-metadata-button,
+.undo-button,
+.keyboard-link button,
+.micro-copy,
+.count-in-control .micro-copy,
+.field-label,
+.note-placeholder,
+.import-drop > small,
+.recent-item small,
+.demo-link small,
+.transport-note,
+.about-panel,
+.scan-list small,
+.scan-message,
+.original-toolbar,
+.original-preview summary > span,
+.empty-footnote,
+.inspector-foot {
+  font-size: 11px;
+}
+/* These two text buttons were already larger; the floor above must not shrink them. */
+.text-button.instrument-details-toggle,
+.text-button.return-library-button {
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .local-badge {
+    font-size: 10px;
+  }
+}
+
+/* --- Touch targets: at least 24 × 24px --- */
+.masthead-actions > .icon-button {
+  width: 32px;
+  height: 32px;
+}
+.text-button,
+.scan-heading {
+  min-height: 24px;
+  min-width: 24px;
+}
+.toggle-row {
+  min-height: 24px;
+}
+@media (max-width: 999px) {
+  .inspector .tempo-control input[type='number'] {
+    min-height: 24px;
+  }
+}
+
+/* --- Phone tools sheet header ---
+   The header sits in the sheet's 18px top padding (margin-top: -18px), but sticky offsets are measured
+   inside that padding, so after any scroll it jumped down 18px and covered the top of the section
+   that openTools had just scrolled to (the 当前练习 heading). Stick it where it already sits. */
+@media (max-width: 999px) {
+  .inspector-settings > .mobile-tools-header {
+    top: -18px;
+  }
+}

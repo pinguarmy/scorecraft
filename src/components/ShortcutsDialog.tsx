@@ -17,9 +17,6 @@ export function ShortcutsDialog({ dialogRef, onClose }: Props) {
         aria-labelledby="keys-title"
         className="shortcut-dialog"
         onClick={e => e.stopPropagation()}
-        onKeyDown={e => {
-          if (e.key === 'Escape') onClose();
-        }}
       >
         <div className="section-heading">
           <h2 id="keys-title">手不离琴，也能练习</h2>

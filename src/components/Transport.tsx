@@ -1,7 +1,9 @@
 import type { CSSProperties, RefObject } from 'react';
 import type { Score } from '../music';
+import { TOOLS_PANEL_ID } from '../app/useMobileTools';
 import type { ToolsSection } from '../app/useMobileTools';
 import type { PracticePlayer } from '../app/usePracticePlayer';
+import { useNumberField } from '../app/useNumberField';
 import { Icon } from './Icon';
 
 type Props = {
@@ -17,7 +19,6 @@ type Props = {
   onEndLoop: () => void;
   allPartsMuted: boolean;
   onHearAllParts: () => void;
-  mobileToolsOpen: boolean;
   practiceTriggerRef: RefObject<HTMLButtonElement | null>;
   onOpenTools: (section: ToolsSection) => void;
   onSkipMeasure: (direction: number) => void;
@@ -27,6 +28,7 @@ type Props = {
 export function Transport(props: Props) {
   const { score, playback, currentMeasureIndex, tempo } = props;
   const { position, playing, audioState, audioMessage, countInRemaining, countInCancelled } = playback;
+  const tempoField = useNumberField({ value: tempo, min: 30, max: 240, onCommit: props.onTempoChange, resetKey: score });
   return (
     <section className="transport" aria-label="播放控制" inert={props.inert ? true : undefined}>
       <div className="section-heading transport-heading">
@@ -116,8 +118,9 @@ export function Transport(props: Props) {
                 type="number"
                 min="30"
                 max="240"
-                value={tempo}
-                onChange={e => props.onTempoChange(Math.max(30, Math.min(240, Number(e.target.value) || 30)))}
+                step="1"
+                {...tempoField.inputProps}
+                aria-describedby={tempoField.error ? 'tempo-error' : undefined}
                 disabled={!score}
               />
               <span>BPM</span>
@@ -133,6 +136,11 @@ export function Transport(props: Props) {
             />
           </div>
         </div>
+        {tempoField.error && (
+          <p id="tempo-error" className="field-error" role="alert">
+            速度：{tempoField.error}
+          </p>
+        )}
       </div>
       <div className="dock-action-row">
         <div className="practice-state" role="status" aria-live="polite" aria-atomic="true" aria-label="当前练习状态">
@@ -151,19 +159,23 @@ export function Transport(props: Props) {
             </div>
           )}
         </div>
+        {/* 两个按钮打开同一个“练习与工具”面板（窄屏下是模态对话框，打开后这里不可操作），
+            分别停在“当前练习”和其下方的工具分区（声音、校对、导出）。 */}
         <div className="mobile-tools-actions">
           <button
             ref={props.practiceTriggerRef}
             className="mobile-tools-trigger"
-            aria-expanded={props.mobileToolsOpen}
+            aria-haspopup="dialog"
+            aria-controls={TOOLS_PANEL_ID}
             onClick={() => props.onOpenTools('practice')}
           >
             当前练习
           </button>
           <button
             className="mobile-tools-trigger"
-            aria-expanded={props.mobileToolsOpen}
-            onClick={() => props.onOpenTools('review')}
+            aria-haspopup="dialog"
+            aria-controls={TOOLS_PANEL_ID}
+            onClick={() => props.onOpenTools('tools')}
           >
             工具
           </button>

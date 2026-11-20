@@ -1,13 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 
-/** 与 styles.css 中窄屏断点一致。 */
+/** 与 styles 中窄屏断点一致。 */
 const COMPACT_QUERY = '(max-width: 999px)';
+
+/** 此刻是否为窄屏布局。异步流程结束时要用它，而不是流程开始那次渲染里的 compactLayout。 */
+export const isCompactLayout = () => window.matchMedia(COMPACT_QUERY).matches;
 
 const FOCUSABLE =
   'button:not(:disabled), input:not(:disabled), select:not(:disabled), a[href], summary, [tabindex="0"]';
 
-export type ToolsSection = 'practice' | 'review' | 'sound' | 'export';
+/** practice：当前练习；tools：当前练习下方的声音、校对、导出（不展开任何一项）；其余为对应分区并展开。 */
+export type ToolsSection = 'practice' | 'tools' | 'review' | 'sound' | 'export';
+
+/** 窄屏面板（.inspector-settings）的 id，供触发按钮的 aria-controls 使用。 */
+export const TOOLS_PANEL_ID = 'practice-tools';
 
 /**
  * 窄屏布局下的“练习与工具”底部面板：
@@ -16,7 +23,11 @@ export type ToolsSection = 'practice' | 'review' | 'sound' | 'export';
  */
 export function useMobileTools(reviewRef: RefObject<HTMLDetailsElement | null>) {
   const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
-  const [compactLayout, setCompactLayout] = useState(() => window.matchMedia(COMPACT_QUERY).matches);
+  const [compactLayout, setCompactLayout] = useState(isCompactLayout);
+  // openTools 常被长时间的异步流程（识别、打开扫描）在结束时调用，那时它来自较早的渲染；
+  // 面板是否打开从这个同步副本读取。
+  const openRef = useRef(false);
+  openRef.current = mobileToolsOpen;
   const toolsRef = useRef<HTMLDivElement>(null);
   const practiceTriggerRef = useRef<HTMLButtonElement>(null);
   const toolsTriggerRef = useRef<HTMLElement | null>(null);
@@ -87,7 +98,8 @@ export function useMobileTools(reviewRef: RefObject<HTMLDetailsElement | null>) 
 
   /** 打开（窄屏）或滚动到（宽屏）指定分区，并展开对应的 <details>。 */
   function openTools(section: ToolsSection = 'practice') {
-    if (!mobileToolsOpen) {
+    const compact = isCompactLayout();
+    if (!openRef.current) {
       toolsTriggerRef.current =
         document.activeElement instanceof HTMLElement && document.activeElement !== document.body
           ? document.activeElement
@@ -102,12 +114,16 @@ export function useMobileTools(reviewRef: RefObject<HTMLDetailsElement | null>) 
       const target = document.querySelector<HTMLDetailsElement>('.export-settings');
       if (target) target.open = true;
     }
-    if (compactLayout) setMobileToolsOpen(true);
-    const id = section === 'practice' ? 'current-practice' : section + '-settings';
+    if (compact) {
+      openRef.current = true;
+      setMobileToolsOpen(true);
+    }
+    const id =
+      section === 'practice' ? 'current-practice' : section === 'tools' ? 'sound-settings' : section + '-settings';
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
         const target = document.getElementById(id);
-        if (compactLayout) {
+        if (isCompactLayout()) {
           const panel = toolsRef.current;
           if (panel && target) {
             const headerHeight = panel.querySelector('.mobile-tools-header')?.getBoundingClientRect().height ?? 0;

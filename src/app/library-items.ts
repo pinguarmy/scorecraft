@@ -23,6 +23,9 @@ export const libraryItemStateLabels: Record<LibraryItemState, string> = {
   scan: '扫描已完成',
 };
 
+/** 列表中显示的曲名；空白曲名显示为“未命名乐谱”，按钮的可访问名称也用它。 */
+export const libraryItemTitle = (title: string | undefined) => title?.trim() || '未命名乐谱';
+
 /**
  * 后来的来源覆盖先前的同名条目：最近缓存 → 本机谱库 → 本页保存状态（需有快照）。
  * 已完成的扫描只在没有对应文档时单独列出。结果按打开时间从新到旧排序。
@@ -38,7 +41,7 @@ export function buildLibraryItems(
   for (const doc of recent) {
     items.set(doc.id, {
       id: doc.id,
-      title: doc.title,
+      title: libraryItemTitle(doc.title),
       opened: doc.opened,
       jobId: doc.jobId,
       state: 'cached',
@@ -49,7 +52,7 @@ export function buildLibraryItems(
     items.set(doc.id, {
       ...items.get(doc.id),
       id: doc.id,
-      title: doc.title,
+      title: libraryItemTitle(doc.title),
       opened: doc.opened,
       jobId: doc.jobId,
       state: 'saved',
@@ -61,7 +64,7 @@ export function buildLibraryItems(
     items.set(id, {
       ...items.get(id),
       id,
-      title: doc.title,
+      title: libraryItemTitle(doc.title),
       opened: doc.opened,
       jobId: doc.jobId,
       state: state.status === 'saved' ? 'saved' : state.status === 'saving' ? 'saving' : 'unsaved',

@@ -20,7 +20,7 @@ import { useHealth } from './app/useHealth';
 import { useInstrumentArrangement } from './app/useInstrumentArrangement';
 import { useKeyboardShortcuts } from './app/useKeyboardShortcuts';
 import { useMeasureJump } from './app/useMeasureJump';
-import { useMobileTools } from './app/useMobileTools';
+import { isCompactLayout, TOOLS_PANEL_ID, useMobileTools } from './app/useMobileTools';
 import { usePracticePlayer } from './app/usePracticePlayer';
 import { usePracticeSettings } from './app/usePracticeSettings';
 import { useScanJobs } from './app/useScanJobs';
@@ -76,7 +76,8 @@ export default function App() {
     void scans.refreshScans();
   }, [library.ensureDocuments]);
   useEffect(() => {
-    if (activeDocumentId && window.innerWidth < 1000) {
+    // 窄屏布局下谱库在乐谱上方，打开乐谱后滚到谱架。断点与布局使用同一个媒体查询。
+    if (activeDocumentId && isCompactLayout()) {
       document.getElementById('score-desk')?.scrollIntoView({ block: 'start', behavior: 'instant' });
     }
   }, [activeDocumentId]);
@@ -406,6 +407,7 @@ export default function App() {
           metadata={corrections.metadata}
           saveState={currentSaveState}
           onRetrySave={retryLibrarySave}
+          scanRetention={scans.scanRetention}
           onShowLibrary={showLibrary}
           notice={notice}
           onDismissNotice={() => setNotice(null)}
@@ -435,13 +437,13 @@ export default function App() {
             onEndLoop={() => practice.setLoop(false)}
             allPartsMuted={summary.allPartsMuted}
             onHearAllParts={practice.hearAllParts}
-            mobileToolsOpen={mobileToolsOpen}
             practiceTriggerRef={tools.practiceTriggerRef}
             onOpenTools={openTools}
             onSkipMeasure={skipMeasure}
           />
           <div
             ref={tools.toolsRef}
+            id={TOOLS_PANEL_ID}
             className="inspector-settings"
             role={sheetOpen ? 'dialog' : undefined}
             aria-modal={sheetOpen ? true : undefined}

@@ -28,6 +28,8 @@ type Props = {
   metadata: ScoreCorrections['metadata'];
   saveState: LibrarySaveState | undefined;
   onRetrySave: (force: boolean) => void;
+  /** 服务器报告的扫描原稿保留天数。 */
+  scanRetention: number;
   onShowLibrary: () => void;
   notice: Notice;
   onDismissNotice: () => void;
@@ -80,7 +82,14 @@ export function ScoreDesk(props: Props) {
           </button>
         )}
       </div>
-      {score && <SaveStatus score={score} saveState={props.saveState} onRetrySave={props.onRetrySave} />}
+      {score && (
+        <SaveStatus
+          score={score}
+          saveState={props.saveState}
+          onRetrySave={props.onRetrySave}
+          scanRetention={props.scanRetention}
+        />
+      )}
       {score && (
         <div className="score-follow-controls">
           <button className="text-button return-library-button" onClick={props.onShowLibrary}>
@@ -186,10 +195,18 @@ type SaveStatusProps = {
   score: Score;
   saveState: LibrarySaveState | undefined;
   onRetrySave: (force: boolean) => void;
+  scanRetention: number;
 };
 
-/** 本机谱库保存状态；失败或冲突时提供重试 / 覆盖保存。 */
-function SaveStatus({ score, saveState, onRetrySave }: SaveStatusProps) {
+/**
+ * 本机谱库保存状态；失败或冲突时提供重试 / 覆盖保存。
+ *
+ * 没有保存状态（saveState 为 undefined）只出现在一种情况：本页还没保存过这份谱，
+ * 而刚从谱库读出的内容和练习设置与谱库一致。这时保存器没有要写的内容，只在清理浏览器
+ * 发件箱后才报告“已保存”；发件箱（IndexedDB）慢或被占用时会停在这里。其他打开方式
+ * 都会在激活乐谱的同时报告“正在保存”。
+ */
+function SaveStatus({ score, saveState, onRetrySave, scanRetention }: SaveStatusProps) {
   return (
     <div className={`library-save-status ${saveState?.status || ''}`} role="status" aria-live="polite">
       <span>
@@ -199,7 +216,9 @@ function SaveStatus({ score, saveState, onRetrySave }: SaveStatusProps) {
             ? `保存冲突：${saveState.error || '已被其他窗口更新。'}`
             : saveState?.status === 'error'
               ? `保存失败：${saveState.error || '请检查本机服务。'}`
-              : '正在保存…'}
+              : saveState?.status === 'saving'
+                ? '正在保存…'
+                : '与本机谱库中的版本一致'}
       </span>
       {(saveState?.status === 'error' || saveState?.status === 'conflict') && (
         <button className="text-button" onClick={() => onRetrySave(saveState?.status === 'conflict')}>
@@ -208,7 +227,7 @@ function SaveStatus({ score, saveState, onRetrySave }: SaveStatusProps) {
       )}
       {saveState?.outboxError && <small className="outbox-warning">{saveState.outboxError}</small>}
       {score.xml.length > 350_000 && (
-        <small>这份谱较大，不写入浏览器最近历史；请以本机谱库保存状态为准。原始扫描另按 7 天保留。</small>
+        <small>这份谱较大，不写入浏览器最近历史；请以本机谱库保存状态为准。原始扫描另按 {scanRetention} 天保留。</small>
       )}
     </div>
   );

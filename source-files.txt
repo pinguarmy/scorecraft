@@ -136,6 +136,7 @@ source-files.txt
 src/App.tsx
 src/api/scorecraft.ts
 src/app/library-items.ts
+src/app/number-draft.ts
 src/app/player-config.ts
 src/app/score-helpers.ts
 src/app/score-xml.ts
@@ -146,6 +147,7 @@ src/app/useInstrumentArrangement.ts
 src/app/useKeyboardShortcuts.ts
 src/app/useMeasureJump.ts
 src/app/useMobileTools.ts
+src/app/useNumberField.ts
 src/app/usePracticePlayer.ts
 src/app/usePracticeSettings.ts
 src/app/useScanJobs.ts
@@ -194,11 +196,13 @@ src/styles/06-restructure-disclosures-inspector-transport.css
 src/styles/07-restructure-viewport-layouts.css
 src/styles/08-reduced-motion-and-print.css
 src/styles/09-error-boundary.css
+src/styles/10-follow-ups.css
 src/styles/index.css
 tests/browser.ts
 tests/e2e/cursor.spec.ts
 tests/e2e/excerpt-count-in.spec.ts
 tests/e2e/follow-cover.spec.ts
+tests/e2e/follow-ups.spec.ts
 tests/e2e/helpers/test.ts
 tests/e2e/helpers/workspace.ts
 tests/e2e/library-read-failure.spec.ts
@@ -237,6 +241,8 @@ tests/music/repeats.test.ts
 tests/music/system-gap.test.ts
 tests/music/tied-correction.test.ts
 tests/practice/app-library-items.test.ts
+tests/practice/app-library-titles.test.ts
+tests/practice/app-number-draft.test.ts
 tests/practice/count-in.test.ts
 tests/practice/instruments.test.ts
 tests/practice/library.test.ts
