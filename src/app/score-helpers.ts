@@ -18,7 +18,7 @@ export function instrumentMap(value: Record<string, string> | undefined, score: 
   const result: Record<string, InstrumentId> = {};
   for (const part of score.parts) {
     const id = value?.[part.id];
-    if (isInstrumentId(id) && (id !== 'drums' || part.notes.some(note => note.percussion !== undefined))) {
+    if (isInstrumentId(id) && (id !== 'drums' || part.notes.some((note) => note.percussion !== undefined))) {
       result[part.id] = id;
     }
   }
@@ -31,7 +31,7 @@ export function scoreBounds(score: Score) {
     tempo: score.tempo,
     totalBeats: score.totalBeats,
     measureCount: score.measures.length,
-    partIds: score.parts.map(part => part.id),
+    partIds: score.parts.map((part) => part.id),
   };
 }
 
@@ -40,14 +40,14 @@ export function measureIndexAt(score: Score | null, position: number) {
   return score
     ? Math.max(
         0,
-        score.measures.findLastIndex(m => m.startBeat <= position + 0.001),
+        score.measures.findLastIndex((m) => m.startBeat <= position + 0.001),
       )
     : 0;
 }
 
 /** 播放器实际静音的声部：只听某声部时，静音其余所有声部。 */
 export function effectiveMutedParts(score: Score, solo: string | null, muted: string[]) {
-  return solo ? score.parts.filter(p => p.id !== solo).map(p => p.id) : muted;
+  return solo ? score.parts.filter((p) => p.id !== solo).map((p) => p.id) : muted;
 }
 
 /** 基准速度与 75% / 100% 两个快捷速度，限制在 30–240 BPM。 */
@@ -72,8 +72,8 @@ export type PracticeSummaryInput = {
 
 /** 播放区“当前练习状态”的一行摘要，以及是否所有声部都被静音。 */
 export function practiceSummary({ score, solo, muted, loop, loopStart, loopEnd, transpose }: PracticeSummaryInput) {
-  const soloIndex = score?.parts.findIndex(part => part.id === solo) ?? -1;
-  const effectiveMutedCount = score?.parts.filter(part => muted.includes(part.id)).length ?? 0;
+  const soloIndex = score?.parts.findIndex((part) => part.id === solo) ?? -1;
+  const effectiveMutedCount = score?.parts.filter((part) => muted.includes(part.id)).length ?? 0;
   const allPartsMuted =
     !!score && soloIndex < 0 && score.parts.length > 0 && effectiveMutedCount === score.parts.length;
   const parts =
@@ -89,7 +89,7 @@ export function practiceSummary({ score, solo, muted, loop, loopStart, loopEnd, 
 
 /** 音符下拉框中的标签：音名 · 声部 · 小节内第几拍。 */
 export function noteLabel(score: Score | null, note: ScoreNote) {
-  const part = score?.parts.find(p => p.id === note.partId);
+  const part = score?.parts.find((p) => p.id === note.partId);
   const beat = note.beat - (score?.measures[note.measure - 1]?.startBeat || 0) + 1;
   return `${pitchName(note.midi)} · ${part?.name || note.partId} · 第 ${Number(beat.toFixed(2))} 拍`;
 }

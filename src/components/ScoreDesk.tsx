@@ -99,7 +99,7 @@ export function ScoreDesk(props: Props) {
           <select
             id="follow-mode"
             value={props.followMode}
-            onChange={e => props.onFollowModeChange(e.target.value === 'page' ? 'page' : 'scroll')}
+            onChange={(e) => props.onFollowModeChange(e.target.value === 'page' ? 'page' : 'scroll')}
           >
             <option value="scroll">向下滚动</option>
             <option value="page">左右翻页</option>
@@ -238,7 +238,7 @@ function MetadataForm({ metadata }: { metadata: ScoreCorrections['metadata'] }) 
   return (
     <form
       className="metadata-form"
-      onSubmit={e => {
+      onSubmit={(e) => {
         e.preventDefault();
         void metadata.save();
       }}
@@ -249,7 +249,7 @@ function MetadataForm({ metadata }: { metadata: ScoreCorrections['metadata'] }) 
           name="score-title"
           value={metadata.titleDraft}
           maxLength={200}
-          onChange={e => metadata.setTitleDraft(e.target.value)}
+          onChange={(e) => metadata.setTitleDraft(e.target.value)}
         />
       </label>
       <label>
@@ -258,7 +258,7 @@ function MetadataForm({ metadata }: { metadata: ScoreCorrections['metadata'] }) 
           name="score-composer"
           value={metadata.composerDraft}
           maxLength={200}
-          onChange={e => metadata.setComposerDraft(e.target.value)}
+          onChange={(e) => metadata.setComposerDraft(e.target.value)}
         />
       </label>
       <div>

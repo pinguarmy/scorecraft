@@ -10,7 +10,9 @@ import {
 } from './helpers/workspace';
 
 test.describe('Workspace Flow - Task-oriented reorganization (2026-11-03)', () => {
-  test('1440 desktop: direct discoverability of core practice, sound folded, deduplicated library, single inputs', async ({ page }) => {
+  test('1440 desktop: direct discoverability of core practice, sound folded, deduplicated library, single inputs', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     const title = `Desk Practice Flow ${Date.now()}`;
     const xml = createAuthoredScoreXml(title, {
@@ -137,9 +139,13 @@ test.describe('Workspace Flow - Task-oriented reorganization (2026-11-03)', () =
     const xml = createAuthoredScoreXml(title, { measures: 4 });
 
     // Injected storage failure
-    await page.route('**/api/library/**', async route => {
+    await page.route('**/api/library/**', async (route) => {
       if (['PUT', 'PATCH'].includes(route.request().method())) {
-        await route.fulfill({ status: 507, contentType: 'application/json', body: JSON.stringify({ message: 'Disk space error' }) });
+        await route.fulfill({
+          status: 507,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'Disk space error' }),
+        });
       } else {
         await route.continue();
       }
@@ -175,12 +181,14 @@ test.describe('Workspace Flow - Task-oriented reorganization (2026-11-03)', () =
     await expect(page.locator('.library-save-status')).toContainText('已保存到本机谱库');
 
     // Verify on server
-    const list = await page.request.get('/api/library').then(r => r.json());
+    const list = await page.request.get('/api/library').then((r) => r.json());
     const savedDoc = list.documents?.find((d: any) => d.title === title);
     expect(savedDoc).toBeTruthy();
   });
 
-  test('390 mobile: single transport dock, sheet open/close/Escape/focus trap & return, no horizontal overflow, state retained', async ({ page }) => {
+  test('390 mobile: single transport dock, sheet open/close/Escape/focus trap & return, no horizontal overflow, state retained', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     const title = `Mobile Dock Flow ${Date.now()}`;
     const xml = createAuthoredScoreXml(title, { measures: 6 });
@@ -299,14 +307,16 @@ test.describe('Workspace Flow - Task-oriented reorganization (2026-11-03)', () =
     expect(afterOverflow.document).toBeLessThanOrEqual(afterOverflow.viewport + 1);
   });
 
-  test('authored mocked recognition: completion automatically opens review details and presents original sheet entrance', async ({ page }) => {
+  test('authored mocked recognition: completion automatically opens review details and presents original sheet entrance', async ({
+    page,
+  }) => {
     // Authored mocked recognition flow (not genuine OMR, explicitly mocked route)
     const mockJobId = randomUUID();
     const mockTitle = `Authored Mocked Scan Flow ${Date.now()}`;
     const mockXml = createAuthoredScoreXml(mockTitle, { measures: 4 });
 
     // Mock health GET so importFile authorizes recognition upload in this test
-    await page.route('**/api/health', async route => {
+    await page.route('**/api/health', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -319,7 +329,7 @@ test.describe('Workspace Flow - Task-oriented reorganization (2026-11-03)', () =
     });
 
     // Mock recognize POST
-    await page.route('**/api/recognize', async route => {
+    await page.route('**/api/recognize', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -328,7 +338,7 @@ test.describe('Workspace Flow - Task-oriented reorganization (2026-11-03)', () =
     });
 
     // Mock job polling GET
-    await page.route(`**/api/jobs/${mockJobId}`, async route => {
+    await page.route(`**/api/jobs/${mockJobId}`, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -342,7 +352,7 @@ test.describe('Workspace Flow - Task-oriented reorganization (2026-11-03)', () =
     });
 
     // Mock score MusicXML GET
-    await page.route(`**/api/jobs/${mockJobId}/score`, async route => {
+    await page.route(`**/api/jobs/${mockJobId}/score`, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/vnd.recordare.musicxml+xml',
@@ -351,7 +361,7 @@ test.describe('Workspace Flow - Task-oriented reorganization (2026-11-03)', () =
     });
 
     // Mock original image GET
-    await page.route(`**/api/jobs/${mockJobId}/original`, async route => {
+    await page.route(`**/api/jobs/${mockJobId}/original`, async (route) => {
       const gif1x1 = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
       await route.fulfill({
         status: 200,
@@ -360,8 +370,19 @@ test.describe('Workspace Flow - Task-oriented reorganization (2026-11-03)', () =
       });
     });
 
-    await page.route('**/api/jobs', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ jobs: [{ id: mockJobId, status: 'done', originalName: 'mock-sheet.png', createdAt: new Date().toISOString() }], retentionDays: 7 }) }));
-    const healthResponse = page.waitForResponse(response => response.url().endsWith('/api/health'));
+    await page.route('**/api/jobs', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          jobs: [
+            { id: mockJobId, status: 'done', originalName: 'mock-sheet.png', createdAt: new Date().toISOString() },
+          ],
+          retentionDays: 7,
+        }),
+      }),
+    );
+    const healthResponse = page.waitForResponse((response) => response.url().endsWith('/api/health'));
     await page.goto('/');
     await healthResponse;
     await expect(page.locator('.engine-heading strong')).toHaveText('Audiveris 已就绪');
@@ -382,7 +403,9 @@ test.describe('Workspace Flow - Task-oriented reorganization (2026-11-03)', () =
     await expect(reviewDetails).toHaveAttribute('open', '');
 
     // Verify original sheet comparison entrance
-    const originalEntrance = page.locator('.review-intro button, .review-notice button').filter({ hasText: /查看原稿/ });
+    const originalEntrance = page
+      .locator('.review-intro button, .review-notice button')
+      .filter({ hasText: /查看原稿/ });
     await expect(originalEntrance.first()).toBeVisible();
 
     // Recognition warnings remain available in the consolidated review section.

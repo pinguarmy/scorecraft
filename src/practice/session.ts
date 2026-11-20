@@ -46,10 +46,21 @@ export const LEGACY_SETTINGS_KEY = 'scorecraft.practice.v1';
 export const MAX_DOCUMENTS = 4;
 export const MAX_XML_CHARS = 350_000;
 
-const INSTRUMENT_IDS = new Set(['piano-bright', 'piano-warm', 'guitar-acoustic', 'guitar-electric', 'bass-electric', 'strings', 'synth-pad', 'drums']);
+const INSTRUMENT_IDS = new Set([
+  'piano-bright',
+  'piano-warm',
+  'guitar-acoustic',
+  'guitar-electric',
+  'bass-electric',
+  'strings',
+  'synth-pad',
+  'drums',
+]);
 function instrumentEntries(value: unknown): [string, string][] {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return [];
-  return Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === 'string' && INSTRUMENT_IDS.has(entry[1]));
+  return Object.entries(value).filter(
+    (entry): entry is [string, string] => typeof entry[1] === 'string' && INSTRUMENT_IDS.has(entry[1]),
+  );
 }
 
 export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -69,28 +80,35 @@ function normalizeXml(raw: string): string {
 }
 
 export function sanitizeSession(value: unknown, bounds: SessionBounds): PracticeSession {
-  const raw = (value && typeof value === 'object') ? (value as Record<string, unknown>) : null;
+  const raw = value && typeof value === 'object' ? (value as Record<string, unknown>) : null;
 
   // Tempo: clamp 30..240 from bounds.tempo as default
-  const fallbackTempo = (typeof bounds?.tempo === 'number' && Number.isFinite(bounds.tempo))
-    ? Math.max(30, Math.min(240, Math.round(bounds.tempo)))
-    : 88;
-  const tempo = (typeof raw?.tempo === 'number' && Number.isFinite(raw.tempo))
-    ? Math.max(30, Math.min(240, Math.round(raw.tempo)))
-    : fallbackTempo;
+  const fallbackTempo =
+    typeof bounds?.tempo === 'number' && Number.isFinite(bounds.tempo)
+      ? Math.max(30, Math.min(240, Math.round(bounds.tempo)))
+      : 88;
+  const tempo =
+    typeof raw?.tempo === 'number' && Number.isFinite(raw.tempo)
+      ? Math.max(30, Math.min(240, Math.round(raw.tempo)))
+      : fallbackTempo;
 
   // Transpose: integer -12..12
-  const transpose = (typeof raw?.transpose === 'number' && Number.isFinite(raw.transpose))
-    ? Math.max(-12, Math.min(12, Math.round(raw.transpose)))
-    : 0;
+  const transpose =
+    typeof raw?.transpose === 'number' && Number.isFinite(raw.transpose)
+      ? Math.max(-12, Math.min(12, Math.round(raw.transpose)))
+      : 0;
 
   // Metronome: boolean, default false, reject non-boolean truthy values
   const metronome = raw?.metronome === true;
 
   // Muted: filtered unique existing IDs from bounds.partIds
-  const partIds = Array.isArray(bounds?.partIds) ? bounds.partIds.filter((id): id is string => typeof id === 'string') : [];
+  const partIds = Array.isArray(bounds?.partIds)
+    ? bounds.partIds.filter((id): id is string => typeof id === 'string')
+    : [];
   const partIdSet = new Set(partIds);
-  const partInstruments = Object.fromEntries(instrumentEntries(raw?.partInstruments).filter(([id]) => partIdSet.has(id)));
+  const partInstruments = Object.fromEntries(
+    instrumentEntries(raw?.partInstruments).filter(([id]) => partIdSet.has(id)),
+  );
   const rawMuted = Array.isArray(raw?.muted) ? raw.muted : [];
   const muted: string[] = [];
   const seenMuted = new Set<string>();
@@ -102,28 +120,34 @@ export function sanitizeSession(value: unknown, bounds: SessionBounds): Practice
   }
 
   // Solo: existing or null
-  const solo = (typeof raw?.solo === 'string' && partIdSet.has(raw.solo)) ? raw.solo : null;
+  const solo = typeof raw?.solo === 'string' && partIdSet.has(raw.solo) ? raw.solo : null;
 
   // Loop: boolean flag, default false, reject non-boolean truthy values
   const loop = raw?.loop === true;
 
   // Start / end: integer 1..measureCount with end >= start
   const maxMeasures = Math.max(1, Math.floor(bounds?.measureCount || 1));
-  const loopStart = (typeof raw?.loopStart === 'number' && Number.isFinite(raw.loopStart))
-    ? Math.max(1, Math.min(maxMeasures, Math.floor(raw.loopStart)))
-    : 1;
-  let loopEnd = (typeof raw?.loopEnd === 'number' && Number.isFinite(raw.loopEnd))
-    ? Math.max(1, Math.min(maxMeasures, Math.floor(raw.loopEnd)))
-    : 1;
+  const loopStart =
+    typeof raw?.loopStart === 'number' && Number.isFinite(raw.loopStart)
+      ? Math.max(1, Math.min(maxMeasures, Math.floor(raw.loopStart)))
+      : 1;
+  let loopEnd =
+    typeof raw?.loopEnd === 'number' && Number.isFinite(raw.loopEnd)
+      ? Math.max(1, Math.min(maxMeasures, Math.floor(raw.loopEnd)))
+      : 1;
   if (loopEnd < loopStart) {
     loopEnd = loopStart;
   }
 
   // Position: finite 0..totalBeats
-  const maxBeats = Math.max(0, (typeof bounds?.totalBeats === 'number' && Number.isFinite(bounds.totalBeats)) ? bounds.totalBeats : 0);
-  const position = (typeof raw?.position === 'number' && Number.isFinite(raw.position))
-    ? Math.max(0, Math.min(maxBeats, raw.position))
-    : 0;
+  const maxBeats = Math.max(
+    0,
+    typeof bounds?.totalBeats === 'number' && Number.isFinite(bounds.totalBeats) ? bounds.totalBeats : 0,
+  );
+  const position =
+    typeof raw?.position === 'number' && Number.isFinite(raw.position)
+      ? Math.max(0, Math.min(maxBeats, raw.position))
+      : 0;
 
   // Follow repeats: defaults true, strictly false only when explicitly false
   const followRepeats = raw?.followRepeats === false ? false : true;
@@ -161,13 +185,13 @@ export async function documentId(xml: string, explicitId?: string): Promise<stri
   const data = new TextEncoder().encode(normalized);
   const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', data);
   const hashHex = Array.from(new Uint8Array(hashBuffer))
-    .map(b => b.toString(16).padStart(2, '0'))
+    .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
   return `sha256:${hashHex}`;
 }
 
 function deriveStorageBounds(rawSession: unknown): SessionBounds {
-  const session = (rawSession && typeof rawSession === 'object') ? (rawSession as Record<string, unknown>) : null;
+  const session = rawSession && typeof rawSession === 'object' ? (rawSession as Record<string, unknown>) : null;
   const partIds: string[] = [];
   if (Array.isArray(session?.muted)) {
     for (const id of session.muted) {
@@ -416,8 +440,12 @@ export function upsertDocument(docs: RecentDocument[], doc: RecentDocument): Rec
     session: sanitizeSession(doc.session, deriveStorageBounds(doc.session)),
   };
 
-  const filtered = current.filter(item => item && typeof item.id === 'string' && item.id.trim().toLowerCase() !== normalizedId);
+  const filtered = current.filter(
+    (item) => item && typeof item.id === 'string' && item.id.trim().toLowerCase() !== normalizedId,
+  );
   const next = [normalizedDoc, ...filtered];
-  const valid = next.filter(item => item && typeof item.xml === 'string' && item.xml.length <= MAX_XML_CHARS && isValidDocId(item.id));
+  const valid = next.filter(
+    (item) => item && typeof item.xml === 'string' && item.xml.length <= MAX_XML_CHARS && isValidDocId(item.id),
+  );
   return valid.slice(0, MAX_DOCUMENTS);
 }

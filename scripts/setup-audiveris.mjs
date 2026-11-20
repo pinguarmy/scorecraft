@@ -1,5 +1,14 @@
 #!/usr/bin/env node
-import { createWriteStream, existsSync, mkdirSync, rmSync, createReadStream, renameSync, lstatSync, writeFileSync } from 'node:fs';
+import {
+  createWriteStream,
+  existsSync,
+  mkdirSync,
+  rmSync,
+  createReadStream,
+  renameSync,
+  lstatSync,
+  writeFileSync,
+} from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { createHash } from 'node:crypto';
 import { resolve, dirname, join } from 'node:path';
@@ -17,9 +26,11 @@ const DOWNLOAD_DIR = join(TOOLS_DIR, 'downloads');
 const ASSET_URL = 'https://github.com/Audiveris/audiveris/releases/download/5.11.0/Audiveris-5.11.0-macosx-arm64.dmg';
 const EXPECTED_SHA256 = '17491af8b6d40153b031dd1f0815e37213f0999ef23f10586af46706e59b2eb6';
 const DMG_PATH = join(DOWNLOAD_DIR, 'Audiveris-5.11.0-macosx-arm64.dmg');
-export const ENGLISH_MODEL_URL = 'https://raw.githubusercontent.com/tesseract-ocr/tessdata/ced78752cc61322fb554c280d13360b35b8684e4/eng.traineddata';
+export const ENGLISH_MODEL_URL =
+  'https://raw.githubusercontent.com/tesseract-ocr/tessdata/ced78752cc61322fb554c280d13360b35b8684e4/eng.traineddata';
 export const ENGLISH_MODEL_SHA256 = 'daa0c97d651c19fba3b25e81317cd697e9908c8208090c94c3905381c23fc047';
-const ENGLISH_LICENSE_URL = 'https://raw.githubusercontent.com/tesseract-ocr/tessdata/ced78752cc61322fb554c280d13360b35b8684e4/LICENSE';
+const ENGLISH_LICENSE_URL =
+  'https://raw.githubusercontent.com/tesseract-ocr/tessdata/ced78752cc61322fb554c280d13360b35b8684e4/LICENSE';
 
 function assertWithinTools(targetPath) {
   const resolved = resolve(targetPath);
@@ -28,7 +39,8 @@ function assertWithinTools(targetPath) {
   }
   // Reject symlink ancestors so lexical .tools paths cannot escape the project.
   for (let current = resolved; current !== ROOT_DIR; current = dirname(current)) {
-    if (existsSync(current) && lstatSync(current).isSymbolicLink()) throw new Error(`Refusing symlink in installation path: ${current}`);
+    if (existsSync(current) && lstatSync(current).isSymbolicLink())
+      throw new Error(`Refusing symlink in installation path: ${current}`);
     if (dirname(current) === current) throw new Error('Installation path does not reach project root');
   }
   return resolved;
@@ -48,7 +60,7 @@ async function computeSha256(filePath) {
   return new Promise((res, rej) => {
     const hash = createHash('sha256');
     const stream = createReadStream(filePath);
-    stream.on('data', chunk => hash.update(chunk));
+    stream.on('data', (chunk) => hash.update(chunk));
     stream.on('end', () => res(hash.digest('hex')));
     stream.on('error', rej);
   });
@@ -79,34 +91,36 @@ async function mountDmg(dmgPath, mountPoint) {
   console.log(`[setup-audiveris] Attaching DMG to ${mountPoint} (read-only)...`);
 
   return new Promise((res, rej) => {
-    const child = spawn('hdiutil', [
-      'attach',
-      dmgPath,
-      '-readonly',
-      '-nobrowse',
-      '-noautoopen',
-      '-mountpoint',
-      mountPoint
-    ], {
-      stdio: ['pipe', 'pipe', 'pipe']
-    });
+    const child = spawn(
+      'hdiutil',
+      ['attach', dmgPath, '-readonly', '-nobrowse', '-noautoopen', '-mountpoint', mountPoint],
+      {
+        stdio: ['pipe', 'pipe', 'pipe'],
+      },
+    );
 
     const timer = setTimeout(() => {
-      try { child.kill('SIGKILL'); } catch {}
+      try {
+        child.kill('SIGKILL');
+      } catch {}
       rej(new Error('hdiutil attach timed out after 30s'));
     }, 30000);
 
     let stdout = '';
     let stderr = '';
 
-    child.stdout.on('data', d => { stdout += d.toString(); });
-    child.stderr.on('data', d => { stderr += d.toString(); });
+    child.stdout.on('data', (d) => {
+      stdout += d.toString();
+    });
+    child.stderr.on('data', (d) => {
+      stderr += d.toString();
+    });
 
     // Automatically accept embedded license agreement by writing Y\n
     child.stdin.write('Y\n');
     child.stdin.end();
 
-    child.on('close', code => {
+    child.on('close', (code) => {
       clearTimeout(timer);
       if (code === 0) {
         res({ stdout, stderr });
@@ -115,7 +129,7 @@ async function mountDmg(dmgPath, mountPoint) {
       }
     });
 
-    child.on('error', err => {
+    child.on('error', (err) => {
       clearTimeout(timer);
       rej(err);
     });
@@ -132,22 +146,28 @@ async function detachDmg(mountPoint) {
 async function installEnglishModel(directory) {
   assertWithinTools(directory);
   const tessdata = join(directory, 'tessdata');
-  assertWithinTools(tessdata); mkdirSync(tessdata, { recursive: true });
+  assertWithinTools(tessdata);
+  mkdirSync(tessdata, { recursive: true });
   const model = join(tessdata, 'eng.traineddata');
   assertWithinTools(model);
-  if (!existsSync(model) || await computeSha256(model) !== ENGLISH_MODEL_SHA256) {
+  if (!existsSync(model) || (await computeSha256(model)) !== ENGLISH_MODEL_SHA256) {
     const temporary = join(tessdata, `eng-${Date.now()}.tmp`);
     try {
       await downloadFile(ENGLISH_MODEL_URL, temporary);
       const hash = await computeSha256(temporary);
       if (hash !== ENGLISH_MODEL_SHA256) throw new Error(`English OCR model checksum mismatch: ${hash}`);
       safeRename(temporary, model);
-    } finally { if (existsSync(temporary)) safeRemove(temporary); }
+    } finally {
+      if (existsSync(temporary)) safeRemove(temporary);
+    }
   }
   const license = join(tessdata, 'LICENSE');
   assertWithinTools(license);
   if (!existsSync(license)) await downloadFile(ENGLISH_LICENSE_URL, license);
-  writeFileSync(join(tessdata, 'SOURCE.txt'), `Tesseract English legacy + LSTM model, Apache-2.0\n${ENGLISH_MODEL_URL}\nSHA256 ${ENGLISH_MODEL_SHA256}\n`);
+  writeFileSync(
+    join(tessdata, 'SOURCE.txt'),
+    `Tesseract English legacy + LSTM model, Apache-2.0\n${ENGLISH_MODEL_URL}\nSHA256 ${ENGLISH_MODEL_SHA256}\n`,
+  );
   console.log(`[setup-audiveris] English OCR model verified: ${ENGLISH_MODEL_SHA256}`);
 }
 
@@ -199,7 +219,9 @@ fi
 
 async function main() {
   if (process.platform !== 'darwin' || process.arch !== 'arm64') {
-    throw new Error('Pinned setup supports macOS arm64 only. Set AUDIVERIS_BIN to your separately installed Audiveris executable.');
+    throw new Error(
+      'Pinned setup supports macOS arm64 only. Set AUDIVERIS_BIN to your separately installed Audiveris executable.',
+    );
   }
   console.log('=== Audiveris Local Pinned Setup ===');
   console.log(`Target directory: ${AUDIVERIS_DIR}`);
@@ -207,7 +229,8 @@ async function main() {
   mkdirSync(TOOLS_DIR, { recursive: true });
   mkdirSync(DOWNLOAD_DIR, { recursive: true });
   if (process.argv.includes('--ocr-only')) {
-    if (!existsSync(join(AUDIVERIS_DIR, 'Audiveris.app'))) throw new Error('Install Audiveris first with npm run setup:omr');
+    if (!existsSync(join(AUDIVERIS_DIR, 'Audiveris.app')))
+      throw new Error('Install Audiveris first with npm run setup:omr');
     await installEnglishModel(AUDIVERIS_DIR);
     const launcher = join(AUDIVERIS_DIR, 'launch');
     assertWithinTools(launcher);
@@ -294,7 +317,8 @@ async function main() {
       for (const name of ['data', 'config', 'cache']) {
         const source = join(AUDIVERIS_DIR, name);
         const destination = join(stagingDir, name);
-        assertWithinTools(source); assertWithinTools(destination);
+        assertWithinTools(source);
+        assertWithinTools(destination);
         if (existsSync(source)) await execFileAsync('cp', ['-aR', source + '/.', destination], { timeout: 60000 });
       }
     }
@@ -327,12 +351,16 @@ async function main() {
     }
     // On an interrupted attach, do not recursively delete a possibly mounted volume.
     if (mounted && existsSync(mountPoint)) safeRemove(mountPoint);
-    if (!mounted) console.warn(`[setup-audiveris] Attach did not complete. If a volume remains, detach it with: hdiutil detach ${JSON.stringify(mountPoint)}`);
+    if (!mounted)
+      console.warn(
+        `[setup-audiveris] Attach did not complete. If a volume remains, detach it with: hdiutil detach ${JSON.stringify(mountPoint)}`,
+      );
     if (existsSync(stagingDir)) safeRemove(stagingDir);
   }
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main().catch(err => {
-  console.error('[setup-audiveris] Error during setup:', err);
-  process.exitCode = 1;
-});
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url))
+  main().catch((err) => {
+    console.error('[setup-audiveris] Error during setup:', err);
+    process.exitCode = 1;
+  });

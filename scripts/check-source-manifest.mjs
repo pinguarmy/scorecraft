@@ -33,8 +33,8 @@ tracked.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 
 const text = await readFile(manifestPath, 'utf8');
 const lines = text.split(/\r?\n/);
-const header = lines.filter(line => line.startsWith('#'));
-const listed = lines.filter(line => line && !line.startsWith('#'));
+const header = lines.filter((line) => line.startsWith('#'));
+const listed = lines.filter((line) => line && !line.startsWith('#'));
 
 if (write) {
   const defaultHeader = ['# Files included in the ScoreCraft source ZIP, one per line.'];
@@ -50,8 +50,8 @@ if (write) {
 
 const trackedSet = new Set(tracked);
 const listedSet = new Set(listed);
-const missing = tracked.filter(name => !listedSet.has(name));
-const stale = listed.filter(name => !trackedSet.has(name));
+const missing = tracked.filter((name) => !listedSet.has(name));
+const stale = listed.filter((name) => !trackedSet.has(name));
 
 if (!missing.length && !stale.length) {
   console.log(`source-files.txt matches git ls-files (${tracked.length} files).`);

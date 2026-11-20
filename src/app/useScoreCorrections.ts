@@ -66,10 +66,10 @@ export function useScoreCorrections({
       return 0;
     }
   }, [score]);
-  const allNotes = useMemo(() => score?.parts.flatMap(part => part.notes) || [], [score]);
-  const selectedNote = allNotes.find(n => n.id === selectedNoteId);
+  const allNotes = useMemo(() => score?.parts.flatMap((part) => part.notes) || [], [score]);
+  const selectedNote = allNotes.find((n) => n.id === selectedNoteId);
   const visibleNotes = useMemo(
-    () => allNotes.filter(n => n.measure === currentMeasureIndex + 1),
+    () => allNotes.filter((n) => n.measure === currentMeasureIndex + 1),
     [allNotes, currentMeasureIndex],
   );
 
@@ -94,7 +94,7 @@ export function useScoreCorrections({
     if (!score) return;
     setTitleDraft(score.title);
     setComposerDraft(score.composer);
-    setEditingMetadata(v => !v);
+    setEditingMetadata((v) => !v);
   }
 
   async function saveMetadata() {
@@ -150,7 +150,7 @@ export function useScoreCorrections({
         'meter-corrected.musicxml',
       );
       if (scoreRef.current !== current) return;
-      setUndo(items => pushUndo(items, current.xml));
+      setUndo((items) => pushUndo(items, current.xml));
       activate(edited, active.source, active.id, active.jobId, true);
       setNotice({
         kind: 'info',
@@ -168,7 +168,7 @@ export function useScoreCorrections({
     try {
       const edited = await readScore(removeOpenOctaveShiftsXml(current.xml), 'corrected.musicxml');
       if (scoreRef.current !== current) return;
-      setUndo(items => pushUndo(items, current.xml));
+      setUndo((items) => pushUndo(items, current.xml));
       activate(edited, active.source, active.id, active.jobId, true);
       setNotice({
         kind: 'info',
@@ -182,7 +182,7 @@ export function useScoreCorrections({
   /** “改名”按钮：再次点击同一声部时收起表单。草稿取源声部的原始名称。 */
   function beginPartRename(partId: string) {
     const current = scoreRef.current;
-    const part = current?.parts.find(item => item.id === partId);
+    const part = current?.parts.find((item) => item.id === partId);
     if (!current || !part?.sourcePartId) return;
     if (renamingPartId === partId) {
       setRenamingPartId(null);
@@ -195,7 +195,7 @@ export function useScoreCorrections({
   async function renamePart() {
     const current = scoreRef.current;
     const active = activeRef.current;
-    const part = current?.parts.find(item => item.id === renamingPartId);
+    const part = current?.parts.find((item) => item.id === renamingPartId);
     if (!current || !active || !part?.sourcePartId) return;
     try {
       const edited = await readScore(
@@ -203,7 +203,7 @@ export function useScoreCorrections({
         'renamed.musicxml',
       );
       if (scoreRef.current !== current) return;
-      setUndo(items => pushUndo(items, current.xml));
+      setUndo((items) => pushUndo(items, current.xml));
       activate(edited, active.source, active.id, active.jobId, true);
       setNotice({
         kind: 'info',
@@ -217,7 +217,7 @@ export function useScoreCorrections({
   /** 选中音符（下拉框或点击谱面），并把“改为”预设为它的原音高。保持引用稳定，供 ScoreView 使用。 */
   const selectNote = useCallback((id: string) => {
     setSelectedNoteId(id);
-    const n = scoreRef.current?.parts.flatMap(p => p.notes).find(note => note.id === id);
+    const n = scoreRef.current?.parts.flatMap((p) => p.notes).find((note) => note.id === id);
     if (n) setEditPitch(n.midi);
   }, []);
 
@@ -227,7 +227,7 @@ export function useScoreCorrections({
       const previous = score.xml;
       const corrected = await readScore(updateNoteXml(score.xml, selectedNote.id, editPitch), 'corrected.musicxml');
       if (scoreRef.current !== score) return;
-      setUndo(items => pushUndo(items, previous));
+      setUndo((items) => pushUndo(items, previous));
       const active = activeRef.current;
       if (active) activate(corrected, source, active.id, active.jobId, true);
       setNotice({
@@ -248,7 +248,7 @@ export function useScoreCorrections({
       if (scoreRef.current !== current) return;
       const active = activeRef.current;
       if (active) activate(restored, source, active.id, active.jobId, true);
-      setUndo(items => items.slice(0, -1));
+      setUndo((items) => items.slice(0, -1));
       setSelectedNoteId(null);
       setNotice({ kind: 'info', text: '已撤销上一次乐谱修改。' });
     } catch (e) {

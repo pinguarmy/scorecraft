@@ -38,10 +38,10 @@ export function SoundSettings({ score, partInstruments, instruments, audioReady,
             id="arrangement-preset"
             value={instruments.arrangementPreset}
             disabled={!score}
-            onChange={e => instruments.applyArrangement(e.target.value)}
+            onChange={(e) => instruments.applyArrangement(e.target.value)}
           >
             <option value="none">当前配器</option>
-            {ARRANGEMENTS.map(item => (
+            {ARRANGEMENTS.map((item) => (
               <option key={item.id} value={item.id}>
                 {arrangementLabel(item)}
               </option>
@@ -52,12 +52,12 @@ export function SoundSettings({ score, partInstruments, instruments, audioReady,
             id="all-parts-instrument"
             value=""
             disabled={!score}
-            onChange={e => instruments.applyAllInstruments(e.target.value)}
+            onChange={(e) => instruments.applyAllInstruments(e.target.value)}
           >
             <option value="" disabled>
               选择后应用到全部声部
             </option>
-            {INSTRUMENTS.map(instrument => (
+            {INSTRUMENTS.map((instrument) => (
               <option
                 key={instrument.id}
                 value={instrument.id}
@@ -65,7 +65,7 @@ export function SoundSettings({ score, partInstruments, instruments, audioReady,
                   instrument.id === 'drums' &&
                   (!score ||
                     score.parts.some(
-                      part => !part.notes.length || !part.notes.every(note => note.percussion !== undefined),
+                      (part) => !part.notes.length || !part.notes.every((note) => note.percussion !== undefined),
                     ))
                 }
               >
@@ -80,7 +80,7 @@ export function SoundSettings({ score, partInstruments, instruments, audioReady,
             className="text-button instrument-details-toggle"
             aria-expanded={showInstrumentDetails}
             aria-controls="individual-instrument-controls"
-            onClick={() => instruments.setShowInstrumentDetails(value => !value)}
+            onClick={() => instruments.setShowInstrumentDetails((value) => !value)}
           >
             逐个调整音色 {showInstrumentDetails ? '−' : '＋'}
           </button>
@@ -92,13 +92,13 @@ export function SoundSettings({ score, partInstruments, instruments, audioReady,
               <select
                 aria-label={`声部乐器 ${part.name}`}
                 value={partInstruments[part.id] || DEFAULT_INSTRUMENT}
-                onChange={event => instruments.changePartInstrument(part.id, event.target.value)}
+                onChange={(event) => instruments.changePartInstrument(part.id, event.target.value)}
               >
-                {INSTRUMENTS.map(instrument => (
+                {INSTRUMENTS.map((instrument) => (
                   <option
                     key={instrument.id}
                     value={instrument.id}
-                    disabled={instrument.id === 'drums' && !part.notes.some(note => note.percussion !== undefined)}
+                    disabled={instrument.id === 'drums' && !part.notes.some((note) => note.percussion !== undefined)}
                   >
                     {instrument.label}
                   </option>

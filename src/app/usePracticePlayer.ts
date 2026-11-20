@@ -53,7 +53,7 @@ export function usePracticePlayer({
         setAudioState(state);
         setAudioMessage(message || '');
       },
-      onPosition: beat => {
+      onPosition: (beat) => {
         if (!countingRef.current && playingRef.current) countEndedRef.current = false;
         setPosition(beat);
         if (!switchingRef.current && sessionRef.current) {
@@ -64,7 +64,7 @@ export function usePracticePlayer({
           }
         }
       },
-      onState: value => {
+      onState: (value) => {
         playingRef.current = value;
         setPlaying(value);
         if (value) setCountInCancelled(false);
@@ -79,13 +79,13 @@ export function usePracticePlayer({
           }
         }
       },
-      onCountIn: remaining => {
+      onCountIn: (remaining) => {
         if (remaining !== null && Number.isFinite(remaining)) {
           countingRef.current = true;
           countEndedRef.current = false;
           setCountInCancelled(false);
           const displayed = Math.max(0, Math.round(remaining * 1000) / 1000);
-          setCountInRemaining(previous => (previous === displayed ? previous : displayed));
+          setCountInRemaining((previous) => (previous === displayed ? previous : displayed));
         } else {
           const wasCounting = countingRef.current;
           countingRef.current = false;

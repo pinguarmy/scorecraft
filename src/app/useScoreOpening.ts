@@ -128,7 +128,7 @@ export function useScoreOpening({
         `本机谱库读取失败，未打开这份谱，以免覆盖已保存的校正版。请检查本机服务后重新打开。${error instanceof Error ? error.message : ''}`,
       );
     }
-    const saved = pending ?? remote ?? recentRef.current.find(item => item.id === id);
+    const saved = pending ?? remote ?? recentRef.current.find((item) => item.id === id);
     const next = saved && saved.xml !== parsed.xml ? await readScore(saved.xml, 'saved.musicxml') : parsed;
     if (generation.current !== token) return;
     if (!pending && remote) {
@@ -415,12 +415,12 @@ export function useScoreOpening({
   async function openScan(job: ScanJob) {
     if (!validJobId(job.id) || job.status !== 'done') return;
     await ensureDocuments();
-    if (library.savedDocuments.some(item => item.id === `job:${job.id}`)) {
+    if (library.savedDocuments.some((item) => item.id === `job:${job.id}`)) {
       await openSavedDocument(`job:${job.id}`);
       if (activeRef.current?.id === `job:${job.id}`) openTools('review');
       return;
     }
-    const corrected = recentRef.current.find(item => item.jobId === job.id);
+    const corrected = recentRef.current.find((item) => item.jobId === job.id);
     if (corrected) {
       await openRecent(corrected);
       if (activeRef.current?.id === corrected.id) openTools('review');

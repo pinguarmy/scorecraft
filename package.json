@@ -5,7 +5,9 @@
   "type": "module",
   "description": "Local-first open-source sheet music scanning and practice desk",
   "license": "AGPL-3.0-or-later",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "dev:server": "tsx watch server/index.ts",

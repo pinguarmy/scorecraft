@@ -36,7 +36,7 @@ export function useMeasureJump({ score, currentMeasureIndex, seek }: Options) {
 
   /** 切换乐谱时，显示恢复的播放位置所在小节。 */
   function resetForScore(next: Score, position: number) {
-    setJumpMeasure(String(Math.max(1, next.measures.findLastIndex(measure => measure.startBeat <= position) + 1)));
+    setJumpMeasure(String(Math.max(1, next.measures.findLastIndex((measure) => measure.startBeat <= position) + 1)));
     setJumpError('');
   }
 

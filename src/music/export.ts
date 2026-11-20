@@ -28,12 +28,7 @@ function writeVarLen(value: number): number[] {
 }
 
 function writeUint32BE(value: number): number[] {
-  return [
-    (value >>> 24) & 0xff,
-    (value >>> 16) & 0xff,
-    (value >>> 8) & 0xff,
-    value & 0xff,
-  ];
+  return [(value >>> 24) & 0xff, (value >>> 16) & 0xff, (value >>> 8) & 0xff, value & 0xff];
 }
 
 function writeUint16BE(value: number): number[] {
@@ -49,16 +44,20 @@ type MidiEvent = {
 export function exportMidi(score: Score, options?: ExportOptions): Uint8Array {
   if (options?.measureRange !== undefined) score = excerptScore(score, options.measureRange);
   else if (options?.followRepeats !== false) score = getPlaybackScore(score);
-  const tempo = options?.tempo && options.tempo > 0 && Number.isFinite(options.tempo)
-    ? options.tempo
-    : (score.tempo > 0 && Number.isFinite(score.tempo) ? score.tempo : 120);
+  const tempo =
+    options?.tempo && options.tempo > 0 && Number.isFinite(options.tempo)
+      ? options.tempo
+      : score.tempo > 0 && Number.isFinite(score.tempo)
+        ? score.tempo
+        : 120;
 
-  const transpose = options?.transpose && Number.isFinite(options.transpose)
-    ? Math.round(options.transpose)
-    : 0;
+  const transpose = options?.transpose && Number.isFinite(options.transpose) ? Math.round(options.transpose) : 0;
 
   const mutedSet = new Set(options?.mutedParts ?? []);
-  const totalScoreTicks = Math.max(0, Math.round((Number.isFinite(score.totalBeats) ? score.totalBeats : 0) * TICKS_PER_BEAT));
+  const totalScoreTicks = Math.max(
+    0,
+    Math.round((Number.isFinite(score.totalBeats) ? score.totalBeats : 0) * TICKS_PER_BEAT),
+  );
 
   // Track 0: Conductor Track (Meta events: Track Name, Tempo, End of Track)
   const track0Bytes: number[] = [];
@@ -89,7 +88,7 @@ export function exportMidi(score: Score, options?: ExportOptions): Uint8Array {
   for (let partIndex = 0; partIndex < score.parts.length; partIndex++) {
     const part = score.parts[partIndex];
     const selectedId = options?.partInstruments?.[part.id] ?? DEFAULT_INSTRUMENT;
-    const selected = INSTRUMENTS.find(instrument => instrument.id === selectedId);
+    const selected = INSTRUMENTS.find((instrument) => instrument.id === selectedId);
     if (!selected) throw new Error('未知声部音色，无法导出 MIDI。');
 
     const drums = selectedId === 'drums';
@@ -146,7 +145,8 @@ export function exportMidi(score: Score, options?: ExportOptions): Uint8Array {
 
         const percussion = note.percussion;
         const drumKey = percussion ?? note.midi;
-        if (drums && (percussion === undefined || !(SUPPORTED_DRUM_NOTES as readonly number[]).includes(drumKey))) continue;
+        if (drums && (percussion === undefined || !(SUPPORTED_DRUM_NOTES as readonly number[]).includes(drumKey)))
+          continue;
         const noteChannel = drums ? 9 : channel;
         const clampedMidi = drums ? drumKey : Math.max(0, Math.min(127, Math.round(note.midi + transpose)));
         const velocity = Math.max(0, Math.min(127, Math.round(Number.isFinite(note.velocity) ? note.velocity : 84)));
@@ -236,9 +236,12 @@ export function exportMidi(score: Score, options?: ExportOptions): Uint8Array {
 
   const numTracks = 1 + partTracks.length;
   const headerBytes = [
-    0x4d, 0x54, 0x68, 0x64, // 'MThd'
-    ...writeUint32BE(6),     // header length 6
-    ...writeUint16BE(1),     // format 1
+    0x4d,
+    0x54,
+    0x68,
+    0x64, // 'MThd'
+    ...writeUint32BE(6), // header length 6
+    ...writeUint16BE(1), // format 1
     ...writeUint16BE(numTracks),
     ...writeUint16BE(TICKS_PER_BEAT),
   ];

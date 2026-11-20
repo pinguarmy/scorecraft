@@ -19,7 +19,10 @@ const engine: RecognitionEngine = {
 };
 
 function archive(pages: number) {
-  const sheets = Array.from({ length: pages }, (_, index) => `<sheet number="${index + 1}"><steps>PAGE</steps></sheet>`);
+  const sheets = Array.from(
+    { length: pages },
+    (_, index) => `<sheet number="${index + 1}"><steps>PAGE</steps></sheet>`,
+  );
   return zipSync({ 'book.xml': strToU8(`<book>${sheets.join('')}</book>`) });
 }
 
@@ -51,7 +54,13 @@ async function seedJob(dataDir: string, id: string, archiveBytes?: Uint8Array) {
   await mkdir(path.join(directory, 'output'), { recursive: true });
   await writeFile(path.join(directory, 'input.pdf'), '%PDF-status-test');
   if (archiveBytes) await writeFile(path.join(directory, 'output/input.omr'), archiveBytes);
-  const job = { id, status: 'error', createdAt: new Date().toISOString(), originalName: 'source.pdf', inputExtension: '.pdf' };
+  const job = {
+    id,
+    status: 'error',
+    createdAt: new Date().toISOString(),
+    originalName: 'source.pdf',
+    inputExtension: '.pdf',
+  };
   await writeFile(path.join(directory, 'job.json'), JSON.stringify(job));
 }
 

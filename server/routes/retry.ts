@@ -13,9 +13,11 @@ import { lookupJob, type JobRouteContext } from './context.js';
  * re-upload; anything else is an internal error.
  */
 function isUnreadableSource(error: unknown): boolean {
-  return (error as NodeJS.ErrnoException).code === 'ENOENT'
-    || error instanceof UnsafePathError
-    || error instanceof RecognitionArchiveError;
+  return (
+    (error as NodeJS.ErrnoException).code === 'ENOENT' ||
+    error instanceof UnsafePathError ||
+    error instanceof RecognitionArchiveError
+  );
 }
 
 /**
@@ -46,7 +48,7 @@ export function createRetryRouter(context: JobRouteContext) {
     let acquiredGate = false;
     let reserved = false;
     let cleaned = false;
-    const retryKey = (source.inputSha256 && SHA256.test(source.inputSha256)) ? source.inputSha256 : source.id;
+    const retryKey = source.inputSha256 && SHA256.test(source.inputSha256) ? source.inputSha256 : source.id;
     store.pin(source.id);
 
     async function cleanupRetry() {

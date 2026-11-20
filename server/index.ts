@@ -15,16 +15,25 @@ if (dataBase) console.log(`数据目录：${path.resolve(root, dataBase)}`);
 const { app, engine, close } = await createApp({ root, ...dataDirs });
 const server = app.listen(port, '127.0.0.1', () => {
   console.log(`ScoreCraft 本机服务：http://127.0.0.1:${port}`);
-  void engine.health().then((health) => console.log(`Audiveris：${health.available ? '可用' : '不可用'} ${health.version ?? ''} ${health.detail ?? ''}`));
+  void engine
+    .health()
+    .then((health) =>
+      console.log(`Audiveris：${health.available ? '可用' : '不可用'} ${health.version ?? ''} ${health.detail ?? ''}`),
+    );
 });
 server.requestTimeout = 30_000;
 server.headersTimeout = 15_000;
 server.keepAliveTimeout = 5_000;
-server.on('error', (error) => { console.error(`启动失败：${error.message}`); process.exitCode = 1; });
+server.on('error', (error) => {
+  console.error(`启动失败：${error.message}`);
+  process.exitCode = 1;
+});
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.once(signal, () => {
     close();
-    server.close(() => { process.exitCode = 0; });
+    server.close(() => {
+      process.exitCode = 0;
+    });
     // Recognition subprocess is killed with its own bounded timeout. Immediate exit
     // would orphan a JVM, so let the active recognition finish before process exits.
     server.closeIdleConnections();

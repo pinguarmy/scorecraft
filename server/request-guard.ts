@@ -35,9 +35,10 @@ export function requestGuard(): RequestHandler {
         let allowed = false;
         try {
           const parsed = new URL(origin);
-          allowed = parsed.protocol === 'http:'
-            && loopback(parsed.hostname)
-            && (parsed.host === host.host || parsed.port === DEV_SERVER_PORT);
+          allowed =
+            parsed.protocol === 'http:' &&
+            loopback(parsed.hostname) &&
+            (parsed.host === host.host || parsed.port === DEV_SERVER_PORT);
         } catch {
           /* reject malformed origin */
         }

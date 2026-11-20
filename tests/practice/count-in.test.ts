@@ -43,7 +43,11 @@ test('sanitizeSession strictly checks countIn: missing, invalid/truthy types def
 
   // Truthy / non-boolean values must NOT be coerced to true
   assert.strictEqual(sanitizeSession({ countIn: 1 }, bounds).countIn, false, 'Number 1 must default to false');
-  assert.strictEqual(sanitizeSession({ countIn: 'true' }, bounds).countIn, false, 'String "true" must default to false');
+  assert.strictEqual(
+    sanitizeSession({ countIn: 'true' }, bounds).countIn,
+    false,
+    'String "true" must default to false',
+  );
   assert.strictEqual(sanitizeSession({ countIn: '1' }, bounds).countIn, false, 'String "1" must default to false');
   assert.strictEqual(sanitizeSession({ countIn: [] }, bounds).countIn, false, 'Array must default to false');
   assert.strictEqual(sanitizeSession({ countIn: {} }, bounds).countIn, false, 'Object must default to false');
@@ -116,7 +120,7 @@ test('v2 save and load roundtrip per-document A/B countIn true/false with other 
   assert.strictEqual(loaded.length, 2);
 
   // Doc A assertions
-  const loadedA = loaded.find(d => d.id === docA.id);
+  const loadedA = loaded.find((d) => d.id === docA.id);
   assert.ok(loadedA);
   assert.strictEqual(loadedA.session.countIn, true);
   assert.strictEqual(loadedA.session.tempo, 140);
@@ -131,7 +135,7 @@ test('v2 save and load roundtrip per-document A/B countIn true/false with other 
   assert.strictEqual(loadedA.session.followRepeats, false);
 
   // Doc B assertions
-  const loadedB = loaded.find(d => d.id === docB.id);
+  const loadedB = loaded.find((d) => d.id === docB.id);
   assert.ok(loadedB);
   assert.strictEqual(loadedB.session.countIn, false);
   assert.strictEqual(loadedB.session.tempo, 96);
@@ -194,20 +198,26 @@ test('legacy migration defaults countIn to false, and empty v2 array stays empty
   // Test legacy migration defaults countIn to false
   const storageMigration = new MemoryStorage();
   const legacyXml = '<score-partwise id="legacy"/>';
-  storageMigration.setItem(LEGACY_RECENT_KEY, JSON.stringify([
-    {
-      id: 'Legacy Song',
-      title: 'Legacy Song',
-      xml: legacyXml,
-      opened: 500,
-      source: 'legacy.xml',
-    },
-  ]));
-  storageMigration.setItem(LEGACY_SETTINGS_KEY, JSON.stringify({
-    tempo: 104,
-    transpose: 1,
-    metronome: true,
-  }));
+  storageMigration.setItem(
+    LEGACY_RECENT_KEY,
+    JSON.stringify([
+      {
+        id: 'Legacy Song',
+        title: 'Legacy Song',
+        xml: legacyXml,
+        opened: 500,
+        source: 'legacy.xml',
+      },
+    ]),
+  );
+  storageMigration.setItem(
+    LEGACY_SETTINGS_KEY,
+    JSON.stringify({
+      tempo: 104,
+      transpose: 1,
+      metronome: true,
+    }),
+  );
 
   const migrated = await loadDocuments(storageMigration);
   assert.strictEqual(migrated.length, 1);
@@ -219,15 +229,18 @@ test('legacy migration defaults countIn to false, and empty v2 array stays empty
   // Test explicit empty array in v2 stays empty and never resurrects v1
   const storageCleared = new MemoryStorage();
   storageCleared.setItem(SESSION_KEY, JSON.stringify([]));
-  storageCleared.setItem(LEGACY_RECENT_KEY, JSON.stringify([
-    {
-      id: 'Resurrect attempt',
-      title: 'Resurrect attempt',
-      xml: legacyXml,
-      opened: 600,
-      source: 'legacy.xml',
-    },
-  ]));
+  storageCleared.setItem(
+    LEGACY_RECENT_KEY,
+    JSON.stringify([
+      {
+        id: 'Resurrect attempt',
+        title: 'Resurrect attempt',
+        xml: legacyXml,
+        opened: 600,
+        source: 'legacy.xml',
+      },
+    ]),
+  );
 
   const clearedLoaded = await loadDocuments(storageCleared);
   assert.deepEqual(clearedLoaded, [], 'Explicit empty v2 array must stay empty and not resurrect legacy v1 records');

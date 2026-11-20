@@ -7,7 +7,7 @@ type Props = {
 export function Masthead({ inert, onToggleShortcuts }: Props) {
   return (
     <header className="masthead" inert={inert ? true : undefined}>
-      <a className="brand" href="#" onClick={e => e.preventDefault()} aria-label="谱间 ScoreCraft">
+      <a className="brand" href="#" onClick={(e) => e.preventDefault()} aria-label="谱间 ScoreCraft">
         <span className="brand-seal">谱</span>
         <span className="brand-name">
           谱间<span>ScoreCraft</span>

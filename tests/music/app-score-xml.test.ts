@@ -15,8 +15,8 @@ import {
 } from '../../src/app/score-helpers';
 
 const dom: XmlDom = {
-  parse: xml => new DOMParser().parseFromString(xml, 'application/xml') as unknown as Document,
-  serialize: doc => new XMLSerializer().serializeToString(doc as unknown as Node),
+  parse: (xml) => new DOMParser().parseFromString(xml, 'application/xml') as unknown as Document,
+  serialize: (doc) => new XMLSerializer().serializeToString(doc as unknown as Node),
 };
 const parse = (xml: string) => new DOMParser().parseFromString(xml, 'application/xml');
 const text = (xml: string, tag: string) => parse(xml).getElementsByTagName(tag)[0]?.textContent;
@@ -31,9 +31,9 @@ const withMetadata = `<?xml version="1.0" encoding="UTF-8"?><score-partwise vers
 test('editScoreMetadata adds work and identification in MusicXML order when missing', () => {
   const result = editScoreMetadata(bare, { title: '  晨光  ', composer: ' 某人 ' }, dom);
   const root = parse(result).documentElement;
-  const elements = Array.from(root.childNodes).filter(node => node.nodeType === 1) as unknown as Element[];
+  const elements = Array.from(root.childNodes).filter((node) => node.nodeType === 1) as unknown as Element[];
   assert.deepEqual(
-    elements.slice(0, 3).map(el => el.tagName),
+    elements.slice(0, 3).map((el) => el.tagName),
     ['work', 'identification', 'part-list'],
   );
   assert.equal(text(result, 'work-title'), '晨光');
@@ -49,7 +49,7 @@ test('editScoreMetadata edits existing elements in place and keeps unrelated met
   assert.equal(text(result, 'work-title'), '未命名乐谱');
   const creators = Array.from(doc.getElementsByTagName('creator'));
   assert.deepEqual(
-    creators.map(el => [el.getAttribute('type'), el.textContent?.length]),
+    creators.map((el) => [el.getAttribute('type'), el.textContent?.length]),
     [
       ['lyricist', 4],
       ['composer', 200],
@@ -95,7 +95,7 @@ test('score helpers derive labels, measure position and practice summary', async
   const note = score.parts[0].notes[1];
   assert.match(noteLabel(score, note), /^D4 · .+ · 第 1 拍$/);
 
-  const [p1, p2] = score.parts.map(part => part.id);
+  const [p1, p2] = score.parts.map((part) => part.id);
   assert.deepEqual(effectiveMutedParts(score, p1, []), [p2]);
   assert.deepEqual(effectiveMutedParts(score, null, [p2]), [p2]);
   const base = { score, solo: null, muted: [], loop: false, loopStart: 1, loopEnd: 2, transpose: 0 };

@@ -73,8 +73,10 @@ export class RecognitionQueue {
   /** No room for another job: too many queued or in flight, or too many stored. */
   isFull(): boolean {
     const { maxPending, maxStored, store } = this.options;
-    return this.pending.length + Number(this.running) + this.uploading >= maxPending
-      || store.jobs.size + this.uploading >= maxStored;
+    return (
+      this.pending.length + Number(this.running) + this.uploading >= maxPending ||
+      store.jobs.size + this.uploading >= maxStored
+    );
   }
 
   /** No room for another retry: as `isFull`, or too many retries being prepared already. */
@@ -117,13 +119,14 @@ export class RecognitionQueue {
       const actual = await realpath(result.file);
       const info = await lstat(result.file);
       if (
-        info.isSymbolicLink()
-        || !info.isFile()
-        || !actual.startsWith(base + path.sep)
-        || !RESULT_EXTENSION.test(actual)
-        || info.size > MAX_RESULT_BYTES
-        || info.size === 0
-      ) throw new Error('识别引擎输出无效。');
+        info.isSymbolicLink() ||
+        !info.isFile() ||
+        !actual.startsWith(base + path.sep) ||
+        !RESULT_EXTENSION.test(actual) ||
+        info.size > MAX_RESULT_BYTES ||
+        info.size === 0
+      )
+        throw new Error('识别引擎输出无效。');
       job.status = 'done';
       job.message = '识别完成，请对照原谱校对。';
       job.result = path.relative(base, actual);

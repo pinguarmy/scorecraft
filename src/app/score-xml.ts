@@ -7,8 +7,8 @@ export type XmlDom = {
 };
 
 export const browserXmlDom: XmlDom = {
-  parse: xml => new DOMParser().parseFromString(xml, 'application/xml'),
-  serialize: doc => new XMLSerializer().serializeToString(doc),
+  parse: (xml) => new DOMParser().parseFromString(xml, 'application/xml'),
+  serialize: (doc) => new XMLSerializer().serializeToString(doc),
 };
 
 const elementChildren = (node: Element) =>
@@ -44,24 +44,24 @@ export function editScoreMetadata(
   const doc = dom.parse(xml);
   if (doc.getElementsByTagName('parsererror').length) throw new Error('原始 MusicXML 无法解析。');
   const root = doc.documentElement;
-  let work = elementChildren(root).find(el => el.tagName === 'work');
+  let work = elementChildren(root).find((el) => el.tagName === 'work');
   if (!work) {
     work = doc.createElement('work');
     root.insertBefore(work, root.firstChild);
   }
-  let title = elementChildren(work).find(el => el.tagName === 'work-title');
+  let title = elementChildren(work).find((el) => el.tagName === 'work-title');
   if (!title) {
     title = doc.createElement('work-title');
     work.appendChild(title);
   }
   title.textContent = drafts.title.trim().slice(0, 200) || '未命名乐谱';
-  let identification = elementChildren(root).find(el => el.tagName === 'identification');
+  let identification = elementChildren(root).find((el) => el.tagName === 'identification');
   if (!identification) {
     identification = doc.createElement('identification');
     root.insertBefore(identification, work.nextSibling);
   }
   let composer = elementChildren(identification).find(
-    el => el.tagName === 'creator' && el.getAttribute('type') === 'composer',
+    (el) => el.tagName === 'creator' && el.getAttribute('type') === 'composer',
   );
   if (!composer) {
     composer = doc.createElement('creator');
@@ -76,7 +76,7 @@ export function editScoreMetadata(
 export function sourcePartName(xml: string, sourcePartId: string, dom: XmlDom = browserXmlDom) {
   const doc = dom.parse(xml);
   const source = Array.from(doc.getElementsByTagName('score-part')).find(
-    item => item.getAttribute('id') === sourcePartId,
+    (item) => item.getAttribute('id') === sourcePartId,
   );
   return source?.getElementsByTagName('part-name')[0]?.textContent || undefined;
 }

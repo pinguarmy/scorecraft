@@ -41,7 +41,7 @@ export function useScoreExport(score: Score | null, settings: ExportSettings, se
     setExporting(true);
     try {
       // 先让“正在生成文件…”渲染出来，再开始可能较慢的合成。
-      await new Promise(resolve => window.setTimeout(resolve, 0));
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
       const filename = exportFileBase(score.title);
       const excerpt = format !== 'xml' && exportScope === 'excerpt';
       if (
@@ -59,7 +59,7 @@ export function useScoreExport(score: Score | null, settings: ExportSettings, se
         transpose,
         followRepeats,
         partInstruments,
-        mutedParts: solo ? score.parts.filter(p => p.id !== solo).map(p => p.id) : muted,
+        mutedParts: solo ? score.parts.filter((p) => p.id !== solo).map((p) => p.id) : muted,
         ...(excerpt ? { measureRange: { start: loopStart, end: loopEnd } } : {}),
       };
       const audioFilename = excerpt ? `${filename}-小节-${loopStart}-${loopEnd}` : filename;

@@ -91,7 +91,7 @@ export function usePracticeSettings({ score, player, sessionRef, saveRef }: Opti
     if (score) player.current?.setPartInstruments(partInstruments);
   }, [partInstruments, score]);
   useEffect(() => {
-    if (score) player.current?.setMutedParts(solo ? score.parts.filter(p => p.id !== solo).map(p => p.id) : muted);
+    if (score) player.current?.setMutedParts(solo ? score.parts.filter((p) => p.id !== solo).map((p) => p.id) : muted);
   }, [muted, solo, score]);
   useEffect(() => {
     if (!score) return;

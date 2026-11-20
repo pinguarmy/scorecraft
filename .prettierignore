@@ -10,3 +10,5 @@ LICENSE
 UPSTREAM-*
 *.musicxml
 source-files.txt
+# Prose is kept as written.
+*.md

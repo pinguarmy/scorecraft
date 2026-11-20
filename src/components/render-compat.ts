@@ -6,10 +6,17 @@ export type CanonicalMeasure = { number: number; startBeat: number; duration: nu
 /** Source playback and engraving can disagree about malformed/overfull bar lengths.
  * Match the measure identity first, then preserve the in-measure quarter-note offset.
  */
-export function sourceToEngravingBeat(sheet: MusicSheet, sourceBeat: number, measures?: readonly CanonicalMeasure[]): number {
+export function sourceToEngravingBeat(
+  sheet: MusicSheet,
+  sourceBeat: number,
+  measures?: readonly CanonicalMeasure[],
+): number {
   const beat = Math.max(0, Number.isFinite(sourceBeat) ? sourceBeat : 0);
   if (!measures?.length) return beat;
-  const index = Math.max(0, measures.findLastIndex(measure => measure.startBeat <= beat + 1e-7));
+  const index = Math.max(
+    0,
+    measures.findLastIndex((measure) => measure.startBeat <= beat + 1e-7),
+  );
   const engraved = sheet.SourceMeasures[index];
   if (!engraved) return beat;
   const offset = Math.max(0, beat - measures[index].startBeat);
@@ -18,11 +25,18 @@ export function sourceToEngravingBeat(sheet: MusicSheet, sourceBeat: number, mea
   return engraved.AbsoluteTimestamp.RealValue * 4 + Math.min(offset, Math.max(0, duration - 1e-7));
 }
 
-export function engravingToSourceBeat(sheet: MusicSheet, measureIndex: number, engravingBeat: number, measures?: readonly CanonicalMeasure[]): number {
+export function engravingToSourceBeat(
+  sheet: MusicSheet,
+  measureIndex: number,
+  engravingBeat: number,
+  measures?: readonly CanonicalMeasure[],
+): number {
   const source = measures?.[measureIndex];
   const engraved = sheet.SourceMeasures[measureIndex];
   if (!source || !engraved) return engravingBeat;
-  return source.startBeat + Math.min(source.duration, Math.max(0, engravingBeat - engraved.AbsoluteTimestamp.RealValue * 4));
+  return (
+    source.startBeat + Math.min(source.duration, Math.max(0, engravingBeat - engraved.AbsoluteTimestamp.RealValue * 4))
+  );
 }
 
 /** OSMD positions its HTML cursor in native SVG pixels, but responsive CSS may
@@ -53,18 +67,28 @@ export function alignCursorToSvg(osmd: OpenSheetMusicDisplay): void {
  * this synchronous cursor operation, then restore the original display model.
  */
 function inSourceOrder<T>(sheet: MusicSheet, visit: () => T): T {
-  const saved: Array<{ instructions: MusicSheet['SourceMeasures'][number]['FirstRepetitionInstructions']; entries: MusicSheet['SourceMeasures'][number]['FirstRepetitionInstructions'] }> = [];
+  const saved: Array<{
+    instructions: MusicSheet['SourceMeasures'][number]['FirstRepetitionInstructions'];
+    entries: MusicSheet['SourceMeasures'][number]['FirstRepetitionInstructions'];
+  }> = [];
   for (const measure of sheet.SourceMeasures) {
     for (const instructions of [measure.FirstRepetitionInstructions, measure.LastRepetitionInstructions]) {
       if (instructions.length) saved.push({ instructions, entries: instructions.splice(0) });
     }
   }
-  try { return visit(); }
-  finally { for (const { instructions, entries } of saved) instructions.push(...entries); }
+  try {
+    return visit();
+  } finally {
+    for (const { instructions, entries } of saved) instructions.push(...entries);
+  }
 }
 
 /** Move the actual iterator: OSMD clone() aliases voice-entry arrays in 1.9.9. */
-export function syncSourceCursor(osmd: OpenSheetMusicDisplay, sourceBeat: number, measures?: readonly CanonicalMeasure[]) {
+export function syncSourceCursor(
+  osmd: OpenSheetMusicDisplay,
+  sourceBeat: number,
+  measures?: readonly CanonicalMeasure[],
+) {
   return inSourceOrder(osmd.Sheet, () => {
     const cursor = osmd.cursor;
     const target = sourceToEngravingBeat(osmd.Sheet, sourceBeat, measures) / 4;
@@ -80,13 +104,18 @@ export function syncSourceCursor(osmd: OpenSheetMusicDisplay, sourceBeat: number
         iterator.moveToPreviousVisibleVoiceEntry(false);
         break;
       }
-      if (iterator.CurrentSourceTimestamp.RealValue === beforeTime && iterator.CurrentMeasureIndex === beforeMeasure) break;
+      if (iterator.CurrentSourceTimestamp.RealValue === beforeTime && iterator.CurrentMeasureIndex === beforeMeasure)
+        break;
     }
     cursor.update();
     alignCursorToSvg(osmd);
     const measureIndex = iterator.CurrentMeasureIndex;
     const engravingBeat = iterator.CurrentSourceTimestamp.RealValue * 4;
-    return { sourceBeat: engravingToSourceBeat(osmd.Sheet, measureIndex, engravingBeat, measures), engravingBeat, measure: measureIndex + 1 };
+    return {
+      sourceBeat: engravingToSourceBeat(osmd.Sheet, measureIndex, engravingBeat, measures),
+      engravingBeat,
+      measure: measureIndex + 1,
+    };
   });
 }
 
@@ -110,7 +139,10 @@ export function repairOpenOctaveShifts(sheet: MusicSheet): RenderCompatibilityRe
         if (!shift || shift.ParentEndMultiExpression) continue;
         // MultiExpression is declared but not exported by OSMD's UMD runtime.
         // Reuse the actual loaded expression class, without patching prototypes.
-        const Expression = expression.constructor as new (measure: typeof last, timestamp: typeof last.Duration) => MultiExpression;
+        const Expression = expression.constructor as new (
+          measure: typeof last,
+          timestamp: typeof last.Duration,
+        ) => MultiExpression;
         const end = new Expression(last, last.Duration.clone());
         end.StaffNumber = staffIndex + 1;
         shift.ParentEndMultiExpression = end;
@@ -120,6 +152,10 @@ export function repairOpenOctaveShifts(sheet: MusicSheet): RenderCompatibilityRe
   }
   return {
     repairedOctaveShifts,
-    warnings: repairedOctaveShifts ? [`识别结果有 ${repairedOctaveShifts} 处八度移位线缺少结束标记。仅为排版将线延伸至谱尾，未修改原始乐谱、音符或播放音高，也不能确认缺失标记的原意，请对照原稿核对。`] : [],
+    warnings: repairedOctaveShifts
+      ? [
+          `识别结果有 ${repairedOctaveShifts} 处八度移位线缺少结束标记。仅为排版将线延伸至谱尾，未修改原始乐谱、音符或播放音高，也不能确认缺失标记的原意，请对照原稿核对。`,
+        ]
+      : [],
   };
 }

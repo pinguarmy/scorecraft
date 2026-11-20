@@ -91,8 +91,24 @@ test('same title and composer but distinct XML yield distinct IDs without collis
     countIn: false,
   };
 
-  const docA: RecentDocument = { id: idA, title: 'Test', composer: 'Anon', xml: xmlA, opened: 100, source: 'a.xml', session: baseSession };
-  const docB: RecentDocument = { id: idB, title: 'Test', composer: 'Anon', xml: xmlB, opened: 200, source: 'b.xml', session: baseSession };
+  const docA: RecentDocument = {
+    id: idA,
+    title: 'Test',
+    composer: 'Anon',
+    xml: xmlA,
+    opened: 100,
+    source: 'a.xml',
+    session: baseSession,
+  };
+  const docB: RecentDocument = {
+    id: idB,
+    title: 'Test',
+    composer: 'Anon',
+    xml: xmlB,
+    opened: 200,
+    source: 'b.xml',
+    session: baseSession,
+  };
 
   const list = upsertDocument([docA], docB);
   assert.equal(list.length, 2, 'Distinct XML with identical title/composer must both be preserved');
@@ -135,15 +151,18 @@ test('sanitizeSession clamps tempo, bounds loop range, clamps position, and stri
   assert.equal(clean.followRepeats, false);
 
   // Test true values and lower clamps
-  const cleanValid = sanitizeSession({
-    metronome: true,
-    loop: true,
-    tempo: 10,
-    transpose: 30,
-    loopStart: -5,
-    loopEnd: -1,
-    position: -10,
-  }, bounds);
+  const cleanValid = sanitizeSession(
+    {
+      metronome: true,
+      loop: true,
+      tempo: 10,
+      transpose: 30,
+      loopStart: -5,
+      loopEnd: -1,
+      position: -10,
+    },
+    bounds,
+  );
 
   assert.equal(cleanValid.metronome, true);
   assert.equal(cleanValid.loop, true);
@@ -170,10 +189,42 @@ test('upsertDocument replaces existing record by stable ID, moves to newest, and
     countIn: false,
   };
 
-  const doc1: RecentDocument = { id: SHA_1, title: 'Doc 1', composer: '', xml: '<doc1/>', opened: 100, source: 's1', session: baseSession };
-  const doc2: RecentDocument = { id: SHA_2, title: 'Doc 2', composer: '', xml: '<doc2/>', opened: 200, source: 's2', session: baseSession };
-  const doc3: RecentDocument = { id: SHA_3, title: 'Doc 3', composer: '', xml: '<doc3/>', opened: 300, source: 's3', session: baseSession };
-  const doc4: RecentDocument = { id: SHA_4, title: 'Doc 4', composer: '', xml: '<doc4/>', opened: 400, source: 's4', session: baseSession };
+  const doc1: RecentDocument = {
+    id: SHA_1,
+    title: 'Doc 1',
+    composer: '',
+    xml: '<doc1/>',
+    opened: 100,
+    source: 's1',
+    session: baseSession,
+  };
+  const doc2: RecentDocument = {
+    id: SHA_2,
+    title: 'Doc 2',
+    composer: '',
+    xml: '<doc2/>',
+    opened: 200,
+    source: 's2',
+    session: baseSession,
+  };
+  const doc3: RecentDocument = {
+    id: SHA_3,
+    title: 'Doc 3',
+    composer: '',
+    xml: '<doc3/>',
+    opened: 300,
+    source: 's3',
+    session: baseSession,
+  };
+  const doc4: RecentDocument = {
+    id: SHA_4,
+    title: 'Doc 4',
+    composer: '',
+    xml: '<doc4/>',
+    opened: 400,
+    source: 's4',
+    session: baseSession,
+  };
 
   let docs = [doc3, doc2, doc1];
 
@@ -184,17 +235,28 @@ test('upsertDocument replaces existing record by stable ID, moves to newest, and
   assert.equal(docs.length, 3);
   assert.equal(docs[0].id, SHA_2);
   assert.equal(docs[0].title, 'Doc 2 Revised');
-  assert.deepEqual(docs.map(d => d.id), [SHA_2, SHA_3, SHA_1]);
+  assert.deepEqual(
+    docs.map((d) => d.id),
+    [SHA_2, SHA_3, SHA_1],
+  );
 
   // Add doc4 and doc5 (cap at MAX_DOCUMENTS = 4)
   docs = upsertDocument(docs, doc4);
   assert.equal(docs.length, 4);
 
-  const doc5: RecentDocument = { id: SHA_5, title: 'Doc 5', composer: '', xml: '<doc5/>', opened: 600, source: 's5', session: baseSession };
+  const doc5: RecentDocument = {
+    id: SHA_5,
+    title: 'Doc 5',
+    composer: '',
+    xml: '<doc5/>',
+    opened: 600,
+    source: 's5',
+    session: baseSession,
+  };
   docs = upsertDocument(docs, doc5);
   assert.equal(docs.length, 4);
   assert.equal(docs[0].id, SHA_5);
-  assert.ok(!docs.some(d => d.id === SHA_1), 'oldest document dropped when capped at 4');
+  assert.ok(!docs.some((d) => d.id === SHA_1), 'oldest document dropped when capped at 4');
 
   // Reject oversized XML without dropping others
   const oversizedDoc: RecentDocument = {
@@ -208,7 +270,7 @@ test('upsertDocument replaces existing record by stable ID, moves to newest, and
   };
   const sameDocs = upsertDocument(docs, oversizedDoc);
   assert.equal(sameDocs.length, 4);
-  assert.ok(!sameDocs.some(d => d.id === oversizedDoc.id));
+  assert.ok(!sameDocs.some((d) => d.id === oversizedDoc.id));
 
   // Reject invalid title-based ID in upsertDocument
   const invalidIdDoc: RecentDocument = {
@@ -222,7 +284,7 @@ test('upsertDocument replaces existing record by stable ID, moves to newest, and
   };
   const afterInvalid = upsertDocument(docs, invalidIdDoc);
   assert.equal(afterInvalid.length, 4);
-  assert.ok(!afterInvalid.some(d => d.id === 'Title:Composer'));
+  assert.ok(!afterInvalid.some((d) => d.id === 'Title:Composer'));
 });
 
 test('saveDocuments handles storage failure gracefully and excludes non-schema properties like originalUrl', () => {
@@ -258,30 +320,37 @@ test('saveDocuments handles storage failure gracefully and excludes non-schema p
   assert.equal(parsed[0].originalUrl, undefined, 'saveDocuments must strictly exclude external originalUrl');
 
   storage.failOnSet = true;
-  assert.equal(saveDocuments(storage, [docWithExtra]), false, 'Must return false when quota is exceeded without throwing');
+  assert.equal(
+    saveDocuments(storage, [docWithExtra]),
+    false,
+    'Must return false when quota is exceeded without throwing',
+  );
 });
 
 test('loadDocuments reads v2, sanitizes corrupt data, and rejects oversized strings', async () => {
   const storage = new MemoryStorage();
-  storage.setItem(SESSION_KEY, JSON.stringify([
-    {
-      id: SHA_1,
-      title: 'Valid Score',
-      composer: 'Bach',
-      xml: '<xml>good</xml>',
-      opened: 12345,
-      source: 'upload.xml',
-      jobId: '12345678-1234-1234-1234-123456789abc',
-      session: { tempo: 150, muted: ['p1'] },
-      originalUrl: 'http://evil.com/leak',
-    },
-    {
-      id: SHA_2,
-      title: 'Oversized Score',
-      xml: 'a'.repeat(MAX_XML_CHARS + 1),
-      session: {},
-    },
-  ]));
+  storage.setItem(
+    SESSION_KEY,
+    JSON.stringify([
+      {
+        id: SHA_1,
+        title: 'Valid Score',
+        composer: 'Bach',
+        xml: '<xml>good</xml>',
+        opened: 12345,
+        source: 'upload.xml',
+        jobId: '12345678-1234-1234-1234-123456789abc',
+        session: { tempo: 150, muted: ['p1'] },
+        originalUrl: 'http://evil.com/leak',
+      },
+      {
+        id: SHA_2,
+        title: 'Oversized Score',
+        xml: 'a'.repeat(MAX_XML_CHARS + 1),
+        session: {},
+      },
+    ]),
+  );
 
   const loaded = await loadDocuments(storage);
   assert.equal(loaded.length, 1);
@@ -297,15 +366,18 @@ test('loadDocuments reads v2, sanitizes corrupt data, and rejects oversized stri
 test('loadDocuments respects explicit empty v2 array without resurrecting v1', async () => {
   const storage = new MemoryStorage();
   storage.setItem(SESSION_KEY, JSON.stringify([]));
-  storage.setItem(LEGACY_RECENT_KEY, JSON.stringify([
-    {
-      id: 'legacy-id',
-      title: 'Legacy',
-      xml: '<legacy/>',
-      opened: 10,
-      source: 'legacy.xml',
-    },
-  ]));
+  storage.setItem(
+    LEGACY_RECENT_KEY,
+    JSON.stringify([
+      {
+        id: 'legacy-id',
+        title: 'Legacy',
+        xml: '<legacy/>',
+        opened: 10,
+        source: 'legacy.xml',
+      },
+    ]),
+  );
 
   const loaded = await loadDocuments(storage);
   assert.deepEqual(loaded, [], 'Explicit [] in v2 must be respected and not resurrect v1');
@@ -318,15 +390,18 @@ test('loadDocuments falls back to v1 on malformed or non-array v2 JSON', async (
   // Case 1: Malformed JSON in v2
   const storageMalformed = new MemoryStorage();
   storageMalformed.setItem(SESSION_KEY, '{ invalid json');
-  storageMalformed.setItem(LEGACY_RECENT_KEY, JSON.stringify([
-    {
-      id: 'Old Song:',
-      title: 'Old Song',
-      xml: v1Xml,
-      opened: 1000,
-      source: 'local.xml',
-    },
-  ]));
+  storageMalformed.setItem(
+    LEGACY_RECENT_KEY,
+    JSON.stringify([
+      {
+        id: 'Old Song:',
+        title: 'Old Song',
+        xml: v1Xml,
+        opened: 1000,
+        source: 'local.xml',
+      },
+    ]),
+  );
 
   const loaded1 = await loadDocuments(storageMalformed);
   assert.equal(loaded1.length, 1);
@@ -335,15 +410,18 @@ test('loadDocuments falls back to v1 on malformed or non-array v2 JSON', async (
   // Case 2: Non-array in v2
   const storageNonArray = new MemoryStorage();
   storageNonArray.setItem(SESSION_KEY, JSON.stringify({ not: 'an array' }));
-  storageNonArray.setItem(LEGACY_RECENT_KEY, JSON.stringify([
-    {
-      id: 'Old Song:',
-      title: 'Old Song',
-      xml: v1Xml,
-      opened: 1000,
-      source: 'local.xml',
-    },
-  ]));
+  storageNonArray.setItem(
+    LEGACY_RECENT_KEY,
+    JSON.stringify([
+      {
+        id: 'Old Song:',
+        title: 'Old Song',
+        xml: v1Xml,
+        opened: 1000,
+        source: 'local.xml',
+      },
+    ]),
+  );
 
   const loaded2 = await loadDocuments(storageNonArray);
   assert.equal(loaded2.length, 1);
@@ -353,21 +431,27 @@ test('loadDocuments falls back to v1 on malformed or non-array v2 JSON', async (
 test('loadDocuments migrates v1 recent and practice settings preserving originals and hashing once', async () => {
   const storage = new MemoryStorage();
   const v1Xml = '<score-partwise><movement-title>Old Song</movement-title></score-partwise>';
-  storage.setItem(LEGACY_RECENT_KEY, JSON.stringify([
-    {
-      id: 'Old Song:',
-      title: 'Old Song',
-      xml: v1Xml,
-      opened: 1000,
-      source: 'local.xml',
-      jobId: 'ABCDEF01-1234-1234-1234-123456789ABC',
-    },
-  ]));
-  storage.setItem(LEGACY_SETTINGS_KEY, JSON.stringify({
-    tempo: 132,
-    transpose: -2,
-    metronome: true,
-  }));
+  storage.setItem(
+    LEGACY_RECENT_KEY,
+    JSON.stringify([
+      {
+        id: 'Old Song:',
+        title: 'Old Song',
+        xml: v1Xml,
+        opened: 1000,
+        source: 'local.xml',
+        jobId: 'ABCDEF01-1234-1234-1234-123456789ABC',
+      },
+    ]),
+  );
+  storage.setItem(
+    LEGACY_SETTINGS_KEY,
+    JSON.stringify({
+      tempo: 132,
+      transpose: -2,
+      metronome: true,
+    }),
+  );
 
   const loaded = await loadDocuments(storage);
 

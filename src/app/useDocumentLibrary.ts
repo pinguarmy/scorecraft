@@ -47,9 +47,9 @@ export function useDocumentLibrary(setNotice: (notice: Notice) => void) {
   const libraryStates = useRef(new Map<string, LibrarySaveState>());
   const librarySaver = useRef<ReturnType<typeof createLibrarySaver> | null>(null);
   if (!librarySaver.current) {
-    librarySaver.current = createLibrarySaver(state => {
+    librarySaver.current = createLibrarySaver((state) => {
       libraryStates.current.set(state.id, state);
-      setSaveStates(previous => ({ ...previous, [state.id]: state }));
+      setSaveStates((previous) => ({ ...previous, [state.id]: state }));
       const snapshot = librarySnapshots.current.get(state.id);
       if (state.status === 'saved' && state.receipt && snapshot) {
         const metadata: SavedDocumentMetadata = {
@@ -62,8 +62,8 @@ export function useDocumentLibrary(setNotice: (notice: Notice) => void) {
           updatedAt: state.receipt.updatedAt,
           xmlBytes: state.receipt.xmlBytes,
         };
-        setSavedDocuments(previous =>
-          [metadata, ...previous.filter(item => item.id !== state.id)].sort((a, b) => b.updatedAt - a.updatedAt),
+        setSavedDocuments((previous) =>
+          [metadata, ...previous.filter((item) => item.id !== state.id)].sort((a, b) => b.updatedAt - a.updatedAt),
         );
       }
     });
@@ -96,15 +96,15 @@ export function useDocumentLibrary(setNotice: (notice: Notice) => void) {
               status: 'error',
               error: '上次未保存的更改已保留。',
             });
-            setSaveStates(previous => ({
+            setSaveStates((previous) => ({
               ...previous,
               [outboxEntry.id]: { id: outboxEntry.id, status: 'error', error: '上次未保存的更改已保留。' },
             }));
           }
           const existing = await listSavedDocuments();
           setSavedDocuments(existing);
-          await migrateBrowserDocuments(docs, new Set(existing.map(item => item.id)));
-          if (docs.some(doc => !existing.some(item => item.id === doc.id)))
+          await migrateBrowserDocuments(docs, new Set(existing.map((item) => item.id)));
+          if (docs.some((doc) => !existing.some((item) => item.id === doc.id)))
             setSavedDocuments(await listSavedDocuments());
           setLibraryError('');
         } catch (error) {

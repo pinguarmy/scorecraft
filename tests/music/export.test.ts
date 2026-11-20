@@ -36,9 +36,7 @@ function createMockScore(overrides?: Partial<Score>): Score {
         id: 'P1-staff2',
         name: 'Piano Bass',
         instrument: 0,
-        notes: [
-          { id: 'p0-m0-n3', partId: 'P1-staff2', measure: 1, beat: 0, duration: 4, midi: 48, velocity: 70 },
-        ],
+        notes: [{ id: 'p0-m0-n3', partId: 'P1-staff2', measure: 1, beat: 0, duration: 4, midi: 48, velocity: 70 }],
       },
     ],
     ...overrides,
@@ -47,25 +45,64 @@ function createMockScore(overrides?: Partial<Score>): Score {
 
 test('zero velocity emits neither MIDI note-on nor note-off and preserves neighboring same-pitch notes and end time', () => {
   const base = createMockScore();
-  const score = { ...base, parts: [{ ...base.parts[0], notes: [
-    { ...base.parts[0].notes[0], beat: 0, duration: 4, midi: 60, velocity: 80 },
-    { ...base.parts[0].notes[0], id: 'silent', beat: 1, duration: 1, midi: 60, velocity: 0 },
-    { ...base.parts[0].notes[0], id: 'next', beat: 4, duration: 1, midi: 62, velocity: 90 },
-  ] }] };
-  const bytes = exportMidi(score); const view = new DataView(bytes.buffer);
-  let offset = 14; const notes: number[][] = []; const ends: number[] = []; const programs: number[] = []; let tempos = 0;
-  const variable = () => { let n = 0, b; do { b = bytes[offset++]; n = n * 128 + (b & 127); } while (b & 128); return n; };
+  const score = {
+    ...base,
+    parts: [
+      {
+        ...base.parts[0],
+        notes: [
+          { ...base.parts[0].notes[0], beat: 0, duration: 4, midi: 60, velocity: 80 },
+          { ...base.parts[0].notes[0], id: 'silent', beat: 1, duration: 1, midi: 60, velocity: 0 },
+          { ...base.parts[0].notes[0], id: 'next', beat: 4, duration: 1, midi: 62, velocity: 90 },
+        ],
+      },
+    ],
+  };
+  const bytes = exportMidi(score);
+  const view = new DataView(bytes.buffer);
+  let offset = 14;
+  const notes: number[][] = [];
+  const ends: number[] = [];
+  const programs: number[] = [];
+  let tempos = 0;
+  const variable = () => {
+    let n = 0,
+      b;
+    do {
+      b = bytes[offset++];
+      n = n * 128 + (b & 127);
+    } while (b & 128);
+    return n;
+  };
   for (let track = 0; track < view.getUint16(10); track++) {
-    const end = offset + 8 + view.getUint32(offset + 4); offset += 8; let tick = 0;
+    const end = offset + 8 + view.getUint32(offset + 4);
+    offset += 8;
+    let tick = 0;
     while (offset < end) {
-      tick += variable(); const status = bytes[offset++];
-      if (status === 255) { const meta = bytes[offset++], length = variable(); if (meta === 47) ends.push(tick); if (meta === 81) tempos++; offset += length; }
-      else if ((status & 240) === 192) programs.push(bytes[offset++]);
-      else { notes.push([tick, status & 240, bytes[offset], bytes[offset + 1]]); offset += 2; }
+      tick += variable();
+      const status = bytes[offset++];
+      if (status === 255) {
+        const meta = bytes[offset++],
+          length = variable();
+        if (meta === 47) ends.push(tick);
+        if (meta === 81) tempos++;
+        offset += length;
+      } else if ((status & 240) === 192) programs.push(bytes[offset++]);
+      else {
+        notes.push([tick, status & 240, bytes[offset], bytes[offset + 1]]);
+        offset += 2;
+      }
     }
   }
-  assert.deepEqual(notes, [[0, 144, 60, 80], [1920, 128, 60, 0], [1920, 144, 62, 90], [2400, 128, 62, 0]]);
-  assert.deepEqual(ends, [3840, 3840]); assert.equal(programs.length, 1); assert.equal(tempos, 1);
+  assert.deepEqual(notes, [
+    [0, 144, 60, 80],
+    [1920, 128, 60, 0],
+    [1920, 144, 62, 90],
+    [2400, 128, 62, 0],
+  ]);
+  assert.deepEqual(ends, [3840, 3840]);
+  assert.equal(programs.length, 1);
+  assert.equal(tempos, 1);
 });
 
 describe('exportMidi', () => {
@@ -173,7 +210,25 @@ describe('exportMidi', () => {
 });
 
 test('large MIDI tracks avoid function argument limits and retain exact note timing', () => {
-  const score = createMockScore({ totalBeats: 20000, parts: [{ id: 'big', name: 'big', instrument: 0, notes: Array.from({ length: 20000 }, (_, i) => ({ id: `n${i}`, partId: 'big', measure: 1, beat: i, duration: .5, midi: 60, velocity: 80 })) }] });
+  const score = createMockScore({
+    totalBeats: 20000,
+    parts: [
+      {
+        id: 'big',
+        name: 'big',
+        instrument: 0,
+        notes: Array.from({ length: 20000 }, (_, i) => ({
+          id: `n${i}`,
+          partId: 'big',
+          measure: 1,
+          beat: i,
+          duration: 0.5,
+          midi: 60,
+          velocity: 80,
+        })),
+      },
+    ],
+  });
   const midi = exportMidi(score);
   const view = new DataView(midi.buffer, midi.byteOffset, midi.byteLength);
   let offset = 14;
@@ -181,25 +236,38 @@ test('large MIDI tracks avoid function argument limits and retain exact note tim
   for (let track = 0; track < view.getUint16(10); track++) {
     assert.equal(new TextDecoder().decode(midi.subarray(offset, offset + 4)), 'MTrk');
     const end = offset + 8 + view.getUint32(offset + 4);
-    offset += 8; let tick = 0;
-    const variable = () => { let n = 0; let b = 0; do { b = midi[offset++]; n = n * 128 + (b & 127); } while (b & 128); return n; };
+    offset += 8;
+    let tick = 0;
+    const variable = () => {
+      let n = 0;
+      let b = 0;
+      do {
+        b = midi[offset++];
+        n = n * 128 + (b & 127);
+      } while (b & 128);
+      return n;
+    };
     while (offset < end) {
-      tick += variable(); const status = midi[offset++];
+      tick += variable();
+      const status = midi[offset++];
       if (status === 0xff) {
-        const type = midi[offset++]; const length = variable();
+        const type = midi[offset++];
+        const length = variable();
         assert.notEqual(type, 0x58, 'do not invent meter denominator absent from Score');
         offset += length;
       } else {
         const count = (status & 0xf0) === 0xc0 ? 1 : 2;
-        const data = Array.from(midi.subarray(offset, offset + count)); offset += count;
+        const data = Array.from(midi.subarray(offset, offset + count));
+        offset += count;
         messages.push({ tick, status, data });
       }
     }
     assert.equal(offset, end);
   }
-  const ons = messages.filter(m => (m.status & 0xf0) === 0x90);
-  const offs = messages.filter(m => (m.status & 0xf0) === 0x80);
-  assert.equal(ons.length, 20000); assert.equal(offs.length, 20000);
+  const ons = messages.filter((m) => (m.status & 0xf0) === 0x90);
+  const offs = messages.filter((m) => (m.status & 0xf0) === 0x80);
+  assert.equal(ons.length, 20000);
+  assert.equal(offs.length, 20000);
   assert.equal(ons[19999].tick, 19999 * 480);
   assert.equal(offs[19999].tick, 19999 * 480 + 240);
   assert.deepEqual(ons[0].data, [60, 80]);
@@ -214,8 +282,7 @@ describe('scoreToWav', () => {
     assert.ok(wav.length > 44, 'WAV file should be larger than 44 bytes');
 
     // Header checks
-    const str = (start: number, len: number) =>
-      String.fromCharCode(...wav.slice(start, start + len));
+    const str = (start: number, len: number) => String.fromCharCode(...wav.slice(start, start + len));
 
     assert.strictEqual(str(0, 4), 'RIFF');
     assert.strictEqual(str(8, 4), 'WAVE');
@@ -248,7 +315,8 @@ describe('scoreToWav', () => {
     assert.strictEqual(wav.length, 44 + dataSize);
     const context = TestOfflineContext.contexts.at(-1)!;
     assert.equal(context.sources.length, 4, 'uses shared sample BufferSources, not oscillators');
-    assert.equal(context.sources[0].at, 0); assert.equal(context.sources[1].at, .5);
+    assert.equal(context.sources[0].at, 0);
+    assert.equal(context.sources[1].at, 0.5);
     assert.equal(context.sources[0].loop, false);
     let stereoFrames = 0;
     for (let offset = 44; offset < wav.length; offset += 4) {
@@ -261,7 +329,10 @@ describe('scoreToWav', () => {
     const score = createMockScore();
     const wavAll = await scoreToWav(score);
     const wavMutedAll = await scoreToWav(score, { mutedParts: ['P1-staff1', 'P1-staff2'] });
-    assert.ok(wavAll.subarray(44).some(byte => byte !== 0), 'test PCM bank produces nonzero output');
+    assert.ok(
+      wavAll.subarray(44).some((byte) => byte !== 0),
+      'test PCM bank produces nonzero output',
+    );
 
     assert.ok(wavAll.length > 44);
     assert.ok(wavMutedAll.length > 44);
@@ -286,9 +357,7 @@ describe('scoreToWav', () => {
           id: 'P1',
           name: 'Long part',
           instrument: 0,
-          notes: [
-            { id: 'n1', partId: 'P1', measure: 1, beat: 0, duration: 2500, midi: 60, velocity: 80 },
-          ],
+          notes: [{ id: 'n1', partId: 'P1', measure: 1, beat: 0, duration: 2500, midi: 60, velocity: 80 }],
         },
       ],
     });
@@ -300,7 +369,7 @@ describe('scoreToWav', () => {
         assert.ok(err.message.includes('乐谱音频导出时长超过 20 分钟上限'));
         assert.ok(err.message.includes('请缩短乐谱或拆分导出'));
         return true;
-      }
+      },
     );
     assert.equal(TestOfflineContext.created, before);
   });
@@ -315,14 +384,23 @@ describe('scoreToWav', () => {
     const old = globalThis.OfflineAudioContext;
     try {
       class MissingDecoder extends TestOfflineContext {
-        constructor(channels: number, length: number, rate: number) { super(channels, length, rate); Object.defineProperty(this, 'decodeAudioData', { value: undefined }); }
+        constructor(channels: number, length: number, rate: number) {
+          super(channels, length, rate);
+          Object.defineProperty(this, 'decodeAudioData', { value: undefined });
+        }
       }
       globalThis.OfflineAudioContext = MissingDecoder as unknown as typeof OfflineAudioContext;
       await assert.rejects(scoreToWav(createMockScore()), /缺少音频解码器/);
-      class FailedRenderer extends TestOfflineContext { async startRendering(): Promise<never> { throw new Error('test render failure'); } }
+      class FailedRenderer extends TestOfflineContext {
+        async startRendering(): Promise<never> {
+          throw new Error('test render failure');
+        }
+      }
       globalThis.OfflineAudioContext = FailedRenderer as unknown as typeof OfflineAudioContext;
       await assert.rejects(scoreToWav(createMockScore()), /钢琴 WAV 渲染失败.*test render failure/);
-    } finally { globalThis.OfflineAudioContext = old; }
+    } finally {
+      globalThis.OfflineAudioContext = old;
+    }
     assert.ok((await scoreToWav(createMockScore())).length > 44);
   });
 
@@ -331,7 +409,9 @@ describe('scoreToWav', () => {
     try {
       globalThis.OfflineAudioContext = undefined as unknown as typeof OfflineAudioContext;
       await assert.rejects(scoreToWav(createMockScore()), /不支持离线音频/);
-    } finally { globalThis.OfflineAudioContext = old; }
+    } finally {
+      globalThis.OfflineAudioContext = old;
+    }
   });
 });
 
@@ -339,10 +419,12 @@ describe('MIDI channel allocation, overlapping voices, and percussion semantics'
   function parseMidiTrackEvents(bytes: Uint8Array) {
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     let offset = 14;
-    const tracks: { trackIndex: number; events: { tick: number; type: number; channel: number; data: number[] }[] }[] = [];
+    const tracks: { trackIndex: number; events: { tick: number; type: number; channel: number; data: number[] }[] }[] =
+      [];
     const numTracks = view.getUint16(10);
     const variable = () => {
-      let n = 0, b = 0;
+      let n = 0,
+        b = 0;
       do {
         b = bytes[offset++];
         n = n * 128 + (b & 127);
@@ -378,7 +460,13 @@ describe('MIDI channel allocation, overlapping voices, and percussion semantics'
 
   test('rejects score when melodic parts exceed 15 channels', () => {
     // 16 melodic parts alternating registered instruments ('piano-bright', 'guitar-acoustic')
-    const registeredInstruments: InstrumentId[] = ['piano-bright', 'guitar-acoustic', 'bass-electric', 'strings', 'synth-pad'];
+    const registeredInstruments: InstrumentId[] = [
+      'piano-bright',
+      'guitar-acoustic',
+      'bass-electric',
+      'strings',
+      'synth-pad',
+    ];
     const parts = Array.from({ length: 16 }, (_, i) => ({
       id: `p${i}`,
       name: `Part ${i}`,
@@ -390,10 +478,7 @@ describe('MIDI channel allocation, overlapping voices, and percussion semantics'
     for (let i = 0; i < 16; i++) {
       partInstruments[`p${i}`] = registeredInstruments[i % registeredInstruments.length];
     }
-    assert.throws(
-      () => exportMidi(score, { partInstruments }),
-      /超过 15 个通道上限/
-    );
+    assert.throws(() => exportMidi(score, { partInstruments }), /超过 15 个通道上限/);
   });
 
   test('rejects score when 16 melodic parts share identical registered instrument without cross-part channel merge', () => {
@@ -406,21 +491,29 @@ describe('MIDI channel allocation, overlapping voices, and percussion semantics'
     }));
     const score = createMockScore({ parts });
     assert.throws(
-      () => exportMidi(score, { partInstruments: Object.fromEntries(parts.map(p => [p.id, 'piano-bright'])) }),
-      /超过 15 个通道上限/
+      () => exportMidi(score, { partInstruments: Object.fromEntries(parts.map((p) => [p.id, 'piano-bright'])) }),
+      /超过 15 个通道上限/,
     );
   });
 
   test('allocates independent melodic channels when interleaved with drum parts without premature wrap', () => {
     // 15 melodic parts and 1 drum part (total 16 parts). Drum is placed at index 1.
-    const registeredInstruments: InstrumentId[] = ['piano-bright', 'guitar-acoustic', 'bass-electric', 'strings', 'synth-pad'];
+    const registeredInstruments: InstrumentId[] = [
+      'piano-bright',
+      'guitar-acoustic',
+      'bass-electric',
+      'strings',
+      'synth-pad',
+    ];
     const parts = Array.from({ length: 16 }, (_, i) => {
       if (i === 1) {
         return {
           id: 'drum-part',
           name: 'Drums',
           instrument: 0,
-          notes: [{ id: 'dn', partId: 'drum-part', measure: 1, beat: 0, duration: 1, midi: 36, percussion: 36, velocity: 80 }],
+          notes: [
+            { id: 'dn', partId: 'drum-part', measure: 1, beat: 0, duration: 1, midi: 36, percussion: 36, velocity: 80 },
+          ],
         };
       }
       return {
@@ -443,7 +536,7 @@ describe('MIDI channel allocation, overlapping voices, and percussion semantics'
 
     // Drum track (track 2, index 1 in parts) must be on channel 9
     const drumTrack = tracks[2];
-    const drumNote = drumTrack.events.find(e => e.type === 144);
+    const drumNote = drumTrack.events.find((e) => e.type === 144);
     assert.equal(drumNote?.channel, 9);
 
     // All 15 melodic tracks must have distinct channels from MELODIC_CHANNELS, no duplicates
@@ -451,7 +544,7 @@ describe('MIDI channel allocation, overlapping voices, and percussion semantics'
     for (let i = 0; i < 16; i++) {
       if (i === 1) continue;
       const track = tracks[i + 1];
-      const noteOn = track.events.find(e => e.type === 144);
+      const noteOn = track.events.find((e) => e.type === 144);
       assert.ok(noteOn, `part ${i} should have a Note On event`);
       assert.notEqual(noteOn.channel, 9, `melodic part ${i} must not use drum channel 9`);
       melodicChannels.push(noteOn.channel);
@@ -483,21 +576,25 @@ describe('MIDI channel allocation, overlapping voices, and percussion semantics'
     const midi = exportMidi(score);
     const tracks = parseMidiTrackEvents(midi);
     const partTrack = tracks[1];
-    const pitch60Events = partTrack.events.filter(e => e.data[0] === 60 && (e.type === 144 || e.type === 128));
+    const pitch60Events = partTrack.events.filter((e) => e.data[0] === 60 && (e.type === 144 || e.type === 128));
 
     // There should be NO NoteOff at tick 960 (which would prematurely kill Voice 1)
-    const tick960Off = pitch60Events.find(e => e.tick === 960 && e.type === 128);
-    assert.equal(tick960Off, undefined, 'intermediate NoteOff at tick 960 must not be emitted to avoid truncating long note');
+    const tick960Off = pitch60Events.find((e) => e.tick === 960 && e.type === 128);
+    assert.equal(
+      tick960Off,
+      undefined,
+      'intermediate NoteOff at tick 960 must not be emitted to avoid truncating long note',
+    );
 
     // Voice 1 should sustain until tick 1920.
     // At tick 1920, NoteOff must precede NoteOn (off-before-on) to retrigger abutting Voice 3.
-    const tick1920Events = pitch60Events.filter(e => e.tick === 1920);
+    const tick1920Events = pitch60Events.filter((e) => e.tick === 1920);
     assert.equal(tick1920Events.length, 2, 'tick 1920 should have both NoteOff and NoteOn');
     assert.equal(tick1920Events[0].type, 128, 'NoteOff must come before NoteOn at tick 1920 (off-before-on)');
     assert.equal(tick1920Events[1].type, 144, 'NoteOn must follow NoteOff at tick 1920');
 
     // Final NoteOff at tick 2400
-    const finalOff = pitch60Events.find(e => e.tick === 2400 && e.type === 128);
+    const finalOff = pitch60Events.find((e) => e.tick === 2400 && e.type === 128);
     assert.ok(finalOff, 'final NoteOff should occur at tick 2400');
   });
 
@@ -508,9 +605,7 @@ describe('MIDI channel allocation, overlapping voices, and percussion semantics'
           id: 'P1',
           name: 'Piano with percussion field',
           instrument: 0,
-          notes: [
-            { id: 'n1', partId: 'P1', measure: 1, beat: 0, duration: 1, midi: 60, percussion: 36, velocity: 80 },
-          ],
+          notes: [{ id: 'n1', partId: 'P1', measure: 1, beat: 0, duration: 1, midi: 60, percussion: 36, velocity: 80 }],
         },
       ],
     });
@@ -521,7 +616,7 @@ describe('MIDI channel allocation, overlapping voices, and percussion semantics'
     });
     const tracks = parseMidiTrackEvents(midi);
     const partTrack = tracks[1];
-    const noteOn = partTrack.events.find(e => e.type === 144);
+    const noteOn = partTrack.events.find((e) => e.type === 144);
     assert.ok(noteOn);
 
     // Non-drums instrument must use melodic channel (not 9) and apply transpose (60 + 12 = 72)

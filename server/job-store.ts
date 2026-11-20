@@ -46,10 +46,10 @@ function publicJob(job: Job) {
     ...(job.autoSkippedCover === true ? { autoSkippedCover: true } : {}),
     ...(skipsCover(job)
       ? {
-        skippedPages: [1],
-        pageCount: job.pageCount,
-        ...(job.sourceJobId && JOB_ID.test(job.sourceJobId) ? { sourceJobId: job.sourceJobId } : {}),
-      }
+          skippedPages: [1],
+          pageCount: job.pageCount,
+          ...(job.sourceJobId && JOB_ID.test(job.sourceJobId) ? { sourceJobId: job.sourceJobId } : {}),
+        }
       : {}),
     ...(typeof job.message === 'string' ? { message: job.message } : {}),
     ...(Array.isArray(job.warnings)
@@ -200,13 +200,14 @@ export class JobStore {
     const { canonicalRoot, maxUploadBytes } = this.options;
     for (const job of this.jobs.values()) {
       if (
-        job.recognitionRevision !== revision
-        || job.inputExtension !== extension
-        || !SHA256.test(job.inputSha256 ?? '')
-        || job.inputSha256 !== digest
-        || this.deleting.has(job.id)
-        || !ACTIVE_OR_DONE.includes(job.status)
-      ) continue;
+        job.recognitionRevision !== revision ||
+        job.inputExtension !== extension ||
+        !SHA256.test(job.inputSha256 ?? '') ||
+        job.inputSha256 !== digest ||
+        this.deleting.has(job.id) ||
+        !ACTIVE_OR_DONE.includes(job.status)
+      )
+        continue;
       // Pin the candidate while validating it so deletion cannot race async reads.
       this.pin(job.id);
       try {
@@ -215,11 +216,14 @@ export class JobStore {
         if (!original) continue;
         try {
           if (
-            path.extname(original.file) !== extension
-            || original.size <= 0
-            || original.size > maxUploadBytes
-            || createHash('sha256').update(await original.handle.readFile()).digest('hex') !== digest
-          ) continue;
+            path.extname(original.file) !== extension ||
+            original.size <= 0 ||
+            original.size > maxUploadBytes ||
+            createHash('sha256')
+              .update(await original.handle.readFile())
+              .digest('hex') !== digest
+          )
+            continue;
         } finally {
           await original.handle.close();
         }
@@ -230,12 +234,13 @@ export class JobStore {
           const actual = await realpath(requested);
           const info = await stat(actual);
           if (
-            !actual.startsWith(directory + path.sep)
-            || !RESULT_EXTENSION.test(actual)
-            || !info.isFile()
-            || info.size <= 0
-            || info.size > MAX_RESULT_BYTES
-          ) continue;
+            !actual.startsWith(directory + path.sep) ||
+            !RESULT_EXTENSION.test(actual) ||
+            !info.isFile() ||
+            info.size <= 0 ||
+            info.size > MAX_RESULT_BYTES
+          )
+            continue;
         }
         if (!this.deleting.has(job.id) && this.jobs.get(job.id) === job && ACTIVE_OR_DONE.includes(job.status)) {
           return job;
@@ -276,7 +281,11 @@ export class JobStore {
       const directory = await this.directory(job.id);
       const original = await originalFile(canonicalRoot, directory);
       if (original && original.size > 0 && original.size <= maxUploadBytes) {
-        return { ...visible, inputBytes: visible.inputBytes ?? original.size, originalUrl: `/api/jobs/${job.id}/original` };
+        return {
+          ...visible,
+          inputBytes: visible.inputBytes ?? original.size,
+          originalUrl: `/api/jobs/${job.id}/original`,
+        };
       }
     } catch {
       /* missing or unsafe old input must not prevent reopening the XML */

@@ -74,7 +74,9 @@ export async function createApp(options: AppOptions) {
     '/api/library',
     await createLibraryRouter({
       root: canonicalRoot,
-      ...(options.libraryDir ? { dataDir: path.resolve(canonicalRoot, path.relative(root, path.resolve(options.libraryDir))) } : {}),
+      ...(options.libraryDir
+        ? { dataDir: path.resolve(canonicalRoot, path.relative(root, path.resolve(options.libraryDir))) }
+        : {}),
     }),
   );
   app.use(createRecognizeRouter(jobs));

@@ -19,7 +19,14 @@
     const data = window.__scorecraftAudio;
     data.oscillatorStarts += 1;
     if (!data.contexts.includes(this.context)) data.contexts.push(this.context);
-    data.events.push({ id: data.oscillatorStarts, type: this.type, frequency: this.frequency.value, scheduledAt: args[0] ?? this.context.currentTime, observedAt: this.context.currentTime, stoppedAt: null });
+    data.events.push({
+      id: data.oscillatorStarts,
+      type: this.type,
+      frequency: this.frequency.value,
+      scheduledAt: args[0] ?? this.context.currentTime,
+      observedAt: this.context.currentTime,
+      stoppedAt: null,
+    });
     this.__scorecraftEvent = data.events.at(-1);
     return nativeStart.apply(this, args);
   };
@@ -33,8 +40,21 @@
   AudioBufferSourceNode.prototype.start = function (...args) {
     const data = window.__scorecraftAudio;
     if (!data.contexts.includes(this.context)) data.contexts.push(this.context);
-    const event = { id: `sample-${data.events.length}`, type: 'sample', scheduledAt: args[0] ?? this.context.currentTime, observedAt: this.context.currentTime, stoppedAt: null, rate: this.playbackRate.value, channels: this.buffer?.numberOfChannels, bufferLength: this.buffer?.length, duration: this.buffer?.duration, offset: args[1] ?? 0, offline: this.context instanceof OfflineAudioContext };
-    data.events.push(event); this.__scorecraftEvent = event;
+    const event = {
+      id: `sample-${data.events.length}`,
+      type: 'sample',
+      scheduledAt: args[0] ?? this.context.currentTime,
+      observedAt: this.context.currentTime,
+      stoppedAt: null,
+      rate: this.playbackRate.value,
+      channels: this.buffer?.numberOfChannels,
+      bufferLength: this.buffer?.length,
+      duration: this.buffer?.duration,
+      offset: args[1] ?? 0,
+      offline: this.context instanceof OfflineAudioContext,
+    };
+    data.events.push(event);
+    this.__scorecraftEvent = event;
     return nativeBufferStart.apply(this, args);
   };
   AudioBufferSourceNode.prototype.stop = function (...args) {

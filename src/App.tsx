@@ -172,7 +172,7 @@ export default function App() {
     if (activeRef.current && activeRef.current.id !== id) saveCurrent();
     const prior = preserve
       ? sessionRef.current
-      : (restoredSession ?? library.recentRef.current.find(item => item.id === id)?.session);
+      : (restoredSession ?? library.recentRef.current.find((item) => item.id === id)?.session);
     const settings = sanitizeSession(prior, scoreBounds(next));
     if (!preserve) library.historySuppressed.current = false;
     switchingRef.current = true;
@@ -333,11 +333,11 @@ export default function App() {
   return (
     <div
       className={`app ${dragging ? 'is-dragging' : ''} ${mobileToolsOpen ? 'mobile-tools-open' : ''}`}
-      onDragOver={e => {
+      onDragOver={(e) => {
         e.preventDefault();
         setDragging(true);
       }}
-      onDragLeave={e => {
+      onDragLeave={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false);
       }}
       onDrop={drop}
@@ -358,7 +358,7 @@ export default function App() {
         <LibrarySidebar
           hasScore={!!score}
           expanded={libraryExpanded}
-          onToggleExpanded={() => setLibraryExpanded(value => !value)}
+          onToggleExpanded={() => setLibraryExpanded((value) => !value)}
           inert={sheetOpen}
           importButtonRef={importButton}
           onChooseFile={chooseFile}
@@ -371,15 +371,15 @@ export default function App() {
             void scans.refreshScans();
           }}
           onOpenDocument={openLibraryItem}
-          onLoadDemo={repeatStudy => void opening.loadDemo(repeatStudy)}
+          onLoadDemo={(repeatStudy) => void opening.loadDemo(repeatStudy)}
           hasRecent={library.recent.length > 0}
           onClearHistory={library.clearHistory}
           scans={scans}
-          onOpenScan={job => void opening.openScan(job)}
-          onRetryWithoutCover={job => void opening.retryWithoutCover(job)}
-          onDeleteScan={job =>
-            void scans.deleteScan(job, jobId => {
-              setOriginal(current => (current?.jobId === jobId ? null : current));
+          onOpenScan={(job) => void opening.openScan(job)}
+          onRetryWithoutCover={(job) => void opening.retryWithoutCover(job)}
+          onDeleteScan={(job) =>
+            void scans.deleteScan(job, (jobId) => {
+              setOriginal((current) => (current?.jobId === jobId ? null : current));
               setNotice({
                 kind: 'info',
                 text: '已删除扫描结果和原稿。本机谱库与浏览器中的校正版没有删除，仍可练习和导出。',
@@ -403,7 +403,7 @@ export default function App() {
           followMode={practice.followMode}
           onFollowModeChange={practice.setFollowMode}
           followEnabled={practice.followEnabled}
-          onToggleFollow={() => practice.setFollowEnabled(value => !value)}
+          onToggleFollow={() => practice.setFollowEnabled((value) => !value)}
           metadata={corrections.metadata}
           saveState={currentSaveState}
           onRetrySave={retryLibrarySave}

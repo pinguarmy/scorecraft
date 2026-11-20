@@ -51,7 +51,7 @@ export function useShortcutsDialog({ sheetOpen, setMobileToolsOpen, practiceTrig
       shortcutTrigger.current = sheetOpen ? practiceTriggerRef.current : (document.activeElement as HTMLElement | null);
       setMobileToolsOpen(false);
     }
-    setShowKeys(v => !v);
+    setShowKeys((v) => !v);
   }
 
   /** 按 “?” 键打开对话框。 */

@@ -44,7 +44,7 @@ export function useInstrumentArrangement({
     if (!score) return;
     const next = instrumentMap(map, score);
     const changed = score.parts.some(
-      part => (partInstruments[part.id] ?? DEFAULT_INSTRUMENT) !== (next[part.id] ?? DEFAULT_INSTRUMENT),
+      (part) => (partInstruments[part.id] ?? DEFAULT_INSTRUMENT) !== (next[part.id] ?? DEFAULT_INSTRUMENT),
     );
     if (!changed) return;
     player.current?.setPartInstruments(next);
@@ -62,7 +62,7 @@ export function useInstrumentArrangement({
       setArrangementPreset('none');
       return;
     }
-    if (!ARRANGEMENTS.some(item => item.id === value)) return;
+    if (!ARRANGEMENTS.some((item) => item.id === value)) return;
     try {
       const next = getArrangementMap(score, value as ArrangementPreset);
       applyInstrumentMap(next, '整首配器已更新，按播放继续。速度、播放位置、只听、静音和循环设置保留。');
@@ -85,8 +85,8 @@ export function useInstrumentArrangement({
 
   function changePartInstrument(partId: string, value: string) {
     if (!score || !isInstrumentId(value)) return;
-    const part = score.parts.find(item => item.id === partId);
-    if (!part || (value === 'drums' && !part.notes.some(note => note.percussion !== undefined))) return;
+    const part = score.parts.find((item) => item.id === partId);
+    if (!part || (value === 'drums' && !part.notes.some((note) => note.percussion !== undefined))) return;
     if ((partInstruments[partId] ?? DEFAULT_INSTRUMENT) === value) return;
     setArrangementPreset('none');
     applyInstrumentMap(
