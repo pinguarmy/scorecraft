@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { access, lstat, mkdir, readFile, readdir, realpath, stat, writeFile } from 'node:fs/promises';
 import { constants } from 'node:fs';
-import { unzipSync, strFromU8 } from 'fflate';
+import { FlateErrorCode, unzipSync, strFromU8, type UnzipFileFilter } from 'fflate';
 import { DOMParser } from '@xmldom/xmldom';
 import path from 'node:path';
 import { assertPlainPath } from './job-files.js';
@@ -11,16 +11,38 @@ export interface RecognitionEngine {
   health(): Promise<EngineHealth>;
   recognize(input: string, output: string, options?: { skipFirstPage?: boolean; pageCount?: number; archive?: string }): Promise<{ file: string; warnings: string[]; skippedPages?: number[]; pageCount?: number; autoSkippedCover?: true }>;
 }
+/** An Audiveris .omr archive that is missing, unsafe, malformed or unusable for page selection. */
+export class RecognitionArchiveError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'RecognitionArchiveError';
+  }
+}
+
+/** fflate reports a file that is not a ZIP archive with this error code (and the message "invalid zip data"). */
+function isInvalidZipData(error: unknown): boolean {
+  return error instanceof Error && (error as Error & { code?: unknown }).code === FlateErrorCode.InvalidZipData;
+}
+
+function unzipArchive(bytes: Uint8Array, filter: UnzipFileFilter) {
+  try {
+    return unzipSync(bytes, { filter });
+  } catch (error) {
+    if (isInvalidZipData(error)) throw new RecognitionArchiveError((error as Error).message);
+    throw error;
+  }
+}
+
 export async function inspectRecognitionArchive(file: string, includeFirstState = false): Promise<{ pageCount: number; remainingComplete: boolean; firstInvalidWithoutPage?: boolean }> {
   const info = await lstat(file);
-  if (!info.isFile() || info.isSymbolicLink() || info.size > 128 * 1024 * 1024) throw new Error('识别档案无效。');
-  const zip = unzipSync(new Uint8Array(await readFile(file)), { filter: entry => entry.name === 'book.xml' && entry.originalSize <= 2 * 1024 * 1024 });
-  if (!zip['book.xml']) throw new Error('识别档案缺少页数信息。');
+  if (!info.isFile() || info.isSymbolicLink() || info.size > 128 * 1024 * 1024) throw new RecognitionArchiveError('识别档案无效。');
+  const zip = unzipArchive(new Uint8Array(await readFile(file)), entry => entry.name === 'book.xml' && entry.originalSize <= 2 * 1024 * 1024);
+  if (!zip['book.xml']) throw new RecognitionArchiveError('识别档案缺少页数信息。');
   const xml = strFromU8(zip['book.xml']);
-  if (/<!DOCTYPE|<!ENTITY/i.test(xml)) throw new Error('识别档案含不安全 XML。');
+  if (/<!DOCTYPE|<!ENTITY/i.test(xml)) throw new RecognitionArchiveError('识别档案含不安全 XML。');
   const document = new DOMParser().parseFromString(xml, 'text/xml');
   const sheets = Array.from(document.documentElement.childNodes).filter((node): node is Element => node.nodeType === 1 && node.nodeName === 'sheet');
-  if (sheets.length < 2 || sheets.length > 500 || sheets.some((sheet, index) => Number(sheet.getAttribute('number')) !== index + 1)) throw new Error('识别档案页数无效或不足两页。');
+  if (sheets.length < 2 || sheets.length > 500 || sheets.some((sheet, index) => Number(sheet.getAttribute('number')) !== index + 1)) throw new RecognitionArchiveError('识别档案页数无效或不足两页。');
   return { pageCount: sheets.length, remainingComplete: sheets.slice(1).every(sheet => sheet.getAttribute('invalid') !== 'true' && /\bPAGE\b/.test(sheet.getElementsByTagName('steps')[0]?.textContent ?? '')), ...(includeFirstState ? { firstInvalidWithoutPage: sheets[0].getAttribute('invalid') === 'true' && !/\bPAGE\b/.test(sheets[0].getElementsByTagName('steps')[0]?.textContent ?? '') } : {}) };
 }
 export type EngineOptions = { root: string; bin?: string; timeoutMs?: number; probeTimeoutMs?: number };
