@@ -18,16 +18,27 @@ function form(bytes = PNG, name = 'score.png') {
 
 function deferred() {
   let release!: () => void;
-  const wait = new Promise<void>((resolve) => { release = resolve; });
+  const wait = new Promise<void>((resolve) => {
+    release = resolve;
+  });
   return { wait, release };
 }
 
 function makeArchive(pages = 3) {
-  const sheets = Array.from({ length: pages }, (_, i) => `<sheet number="${i + 1}"><steps>LOAD PAGE</steps></sheet>`).join('');
+  const sheets = Array.from(
+    { length: pages },
+    (_, i) => `<sheet number="${i + 1}"><steps>LOAD PAGE</steps></sheet>`,
+  ).join('');
   return zipSync({ 'book.xml': strToU8(`<book>${sheets}</book>`) });
 }
 
-async function writeJobSeed(dataDir: string, id: string, meta: Partial<Job> = {}, pdfBytes = Buffer.from('%PDF-original-test'), archiveBytes = makeArchive(3)) {
+async function writeJobSeed(
+  dataDir: string,
+  id: string,
+  meta: Partial<Job> = {},
+  pdfBytes = Buffer.from('%PDF-original-test'),
+  archiveBytes = makeArchive(3),
+) {
   const dir = path.join(dataDir, id);
   await mkdir(path.join(dir, 'output'), { recursive: true });
   await writeFile(path.join(dir, 'input.pdf'), pdfBytes);
@@ -103,7 +114,9 @@ test('recognize: closing during health check returns 503 and cleans up directory
   const gate = deferred();
   const f = await createServerFixture({
     _testHooks: {
-      onHealth: async () => { await gate.wait; },
+      onHealth: async () => {
+        await gate.wait;
+      },
     },
   });
   try {
@@ -126,7 +139,9 @@ test('recognize: closing during upload returns 503 and cleans up directory', asy
   const gate = deferred();
   const f = await createServerFixture({
     _testHooks: {
-      onUpload: async () => { await gate.wait; },
+      onUpload: async () => {
+        await gate.wait;
+      },
     },
   });
   try {
@@ -192,7 +207,7 @@ test('retry: closing during persist returns 503, cleans up new directory and kee
     },
     async (dataDir) => {
       await writeJobSeed(dataDir, sourceId);
-    }
+    },
   );
   try {
     const retryPromise = fetch(`${f.base}/api/jobs/${sourceId}/retry`, {
@@ -238,7 +253,7 @@ test('retry: global bounded gate throttles different tasks concurrently and allo
     async (dataDir) => {
       await writeJobSeed(dataDir, id1, {}, Buffer.from('%PDF-input-1'));
       await writeJobSeed(dataDir, id2, {}, Buffer.from('%PDF-input-2'));
-    }
+    },
   );
   try {
     const task1Promise = fetch(`${f.base}/api/jobs/${id1}/retry`, {
@@ -297,7 +312,7 @@ test('retry: same-task concurrent requests preserve deduplication under gate', a
     },
     async (dataDir) => {
       await writeJobSeed(dataDir, id);
-    }
+    },
   );
   try {
     const [p1, p2] = [
@@ -347,7 +362,7 @@ test('retry: oversized PDF (> maxUploadBytes) returns 400 and releases gate in f
     async (dataDir) => {
       await writeJobSeed(dataDir, id, {}, bigPdf);
       await writeJobSeed(dataDir, validId, {}, Buffer.from('%PDF-small'));
-    }
+    },
   );
   try {
     const resBig = await fetch(`${f.base}/api/jobs/${id}/retry`, {
@@ -382,7 +397,7 @@ test('retry: corrupt/missing archive returns 400 and releases gate in finally', 
     async (dataDir) => {
       await writeJobSeed(dataDir, corruptId, {}, Buffer.from('%PDF-test'), Buffer.from('corrupt not zip'));
       await writeJobSeed(dataDir, validId);
-    }
+    },
   );
   try {
     const resCorrupt = await fetch(`${f.base}/api/jobs/${corruptId}/retry`, {
@@ -427,7 +442,7 @@ test('retry: existing/reuse path is also bounded by concurrency limit before fin
     async (dataDir) => {
       await writeJobSeed(dataDir, idA, {}, Buffer.from('%PDF-input-A'));
       await writeJobSeed(dataDir, idC, {}, Buffer.from('%PDF-input-C'));
-    }
+    },
   );
   try {
     // 1. Retry A initially to produce an existing/reusable retry job

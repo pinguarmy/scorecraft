@@ -213,11 +213,11 @@
   .inspector .tempo-control > label {
     font-size: 10px !important;
   }
-  .inspector .tempo-control input[type=number] {
+  .inspector .tempo-control input[type='number'] {
     font-size: 15px !important;
     width: 30px !important;
   }
-  .inspector .tempo-control input[type=range] {
+  .inspector .tempo-control input[type='range'] {
     display: none !important;
   }
 
@@ -291,7 +291,10 @@
     box-shadow: 0 -2px 10px #202a2810;
     font-size: 12px !important;
   }
-  .inspector .transport > .audio-status.error { color: #9c452e; border-color: #bd4d35; }
+  .inspector .transport > .audio-status.error {
+    color: #9c452e;
+    border-color: #bd4d35;
+  }
 
   /* Sheet styling for .inspector-settings */
   .inspector-settings {
@@ -401,8 +404,14 @@
 
 /* <= 760px Mobile: 1 column, transport dock ~100-125px with min touch 44px */
 @media (max-width: 760px) {
-  .library { display: block; width: 100%; }
-  .library-content { width: 100%; min-width: 0; }
+  .library {
+    display: block;
+    width: 100%;
+  }
+  .library-content {
+    width: 100%;
+    min-width: 0;
+  }
   .inspector {
     display: contents;
   }
@@ -422,4 +431,3 @@
     padding: 4px 10px max(6px, env(safe-area-inset-bottom, 0px));
   }
 }
-

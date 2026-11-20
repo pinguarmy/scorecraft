@@ -73,7 +73,7 @@ export function buildLibraryItems(
   for (const job of scanJobs) {
     if (
       job.status !== 'done' ||
-      [...items.values()].some(item => item.jobId === job.id || item.id === 'job:' + job.id)
+      [...items.values()].some((item) => item.jobId === job.id || item.id === 'job:' + job.id)
     ) {
       continue;
     }

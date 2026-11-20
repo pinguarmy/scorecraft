@@ -1,10 +1,20 @@
 import { isValidDocId, type PracticeSession, type RecentDocument } from './session';
 
 export type SavedDocumentMetadata = {
-  id: string; title: string; composer: string; source: string; jobId?: string;
-  opened: number; updatedAt: number; xmlBytes: number;
+  id: string;
+  title: string;
+  composer: string;
+  source: string;
+  jobId?: string;
+  opened: number;
+  updatedAt: number;
+  xmlBytes: number;
 };
-export type RemoteSavedDocument = Omit<RecentDocument, 'session'> & { session: unknown; updatedAt?: number; xmlBytes?: number };
+export type RemoteSavedDocument = Omit<RecentDocument, 'session'> & {
+  session: unknown;
+  updatedAt?: number;
+  xmlBytes?: number;
+};
 export type SaveReceipt = { id: string; updatedAt: number; xmlBytes: number };
 export type LibrarySaveState = {
   id: string;
@@ -32,7 +42,9 @@ async function failure(response: Response): Promise<Error> {
   try {
     const body = await response.json();
     if (typeof body?.message === 'string') message = body.message;
-  } catch { /* A non-JSON server error still has an actionable HTTP status. */ }
+  } catch {
+    /* A non-JSON server error still has an actionable HTTP status. */
+  }
   if (response.status === 409) return new LibraryConflictError(message);
   return new Error(message);
 }
@@ -41,7 +53,8 @@ async function checked(response: Response) {
   return response.json();
 }
 function checkXml(xml: unknown): asserts xml is string {
-  if (typeof xml !== 'string' || !xml.length || new TextEncoder().encode(xml).byteLength > MAX_XML_BYTES) throw new Error('乐谱内容为空或超过本机谱库 8 MiB 上限。');
+  if (typeof xml !== 'string' || !xml.length || new TextEncoder().encode(xml).byteLength > MAX_XML_BYTES)
+    throw new Error('乐谱内容为空或超过本机谱库 8 MiB 上限。');
 }
 
 // Native IndexedDB Outbox Persistence for pending changes
@@ -90,9 +103,7 @@ const outboxQueues = new Map<string, Promise<unknown>>();
 
 function queueOutboxOp<T>(id: string, op: () => Promise<T>): Promise<T> {
   const previous = outboxQueues.get(id) ?? Promise.resolve();
-  const current = previous
-    .catch(() => {})
-    .then(op);
+  const current = previous.catch(() => {}).then(op);
   const cleaned = current.finally(() => {
     if (outboxQueues.get(id) === cleaned) outboxQueues.delete(id);
   });
@@ -204,14 +215,15 @@ export async function getOutboxDocument(id: string): Promise<RecentDocument | nu
 
 export async function listOutboxDocuments(): Promise<RecentDocument[]> {
   const entries = await listOutboxEntries();
-  return entries.map(e => e.document);
+  return entries.map((e) => e.document);
 }
 
 export async function listSavedDocuments(signal?: AbortSignal): Promise<SavedDocumentMetadata[]> {
   const data = await checked(await fetch('/api/library', { signal }));
   if (!Array.isArray(data.documents)) throw new Error('本机谱库列表格式无效。');
   return data.documents.map((item: SavedDocumentMetadata) => {
-    if (!item || !isValidDocId(item.id) || typeof item.title !== 'string' || !Number.isFinite(item.updatedAt)) throw new Error('本机谱库条目格式无效。');
+    if (!item || !isValidDocId(item.id) || typeof item.title !== 'string' || !Number.isFinite(item.updatedAt))
+      throw new Error('本机谱库条目格式无效。');
     return item;
   });
 }
@@ -219,36 +231,75 @@ export async function getSavedDocument(id: string, signal?: AbortSignal): Promis
   const response = await fetch(endpoint(id), { signal });
   if (response.status === 404) return null;
   const item = await checked(response);
-  if (item.id !== id || typeof item.title !== 'string' || typeof item.composer !== 'string' || typeof item.source !== 'string' || !Number.isFinite(item.opened)) throw new Error('已保存乐谱格式无效。');
+  if (
+    item.id !== id ||
+    typeof item.title !== 'string' ||
+    typeof item.composer !== 'string' ||
+    typeof item.source !== 'string' ||
+    !Number.isFinite(item.opened)
+  )
+    throw new Error('已保存乐谱格式无效。');
   checkXml(item.xml);
   // Session is deliberately untrusted until App has parsed the score and knows its actual bounds.
   return item as RemoteSavedDocument;
 }
-export async function saveSavedDocument(document: RecentDocument, signal?: AbortSignal, createOnly = false, ifMatch?: number): Promise<SaveReceipt | null> {
+export async function saveSavedDocument(
+  document: RecentDocument,
+  signal?: AbortSignal,
+  createOnly = false,
+  ifMatch?: number,
+): Promise<SaveReceipt | null> {
   checkXml(document.xml);
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (ifMatch !== undefined) headers['If-Match'] = `"${ifMatch}"`;
   const response = await fetch(`${endpoint(document.id)}${createOnly ? '?createOnly=1' : ''}`, {
-    method: 'PUT', headers, body: JSON.stringify(document), signal,
+    method: 'PUT',
+    headers,
+    body: JSON.stringify(document),
+    signal,
   });
   if (createOnly && response.status === 409) return null;
   return checked(response);
 }
-export async function patchSavedSession(id: string, session: PracticeSession, opened: number, signal?: AbortSignal, ifMatch?: number): Promise<SaveReceipt> {
+export async function patchSavedSession(
+  id: string,
+  session: PracticeSession,
+  opened: number,
+  signal?: AbortSignal,
+  ifMatch?: number,
+): Promise<SaveReceipt> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (ifMatch !== undefined) headers['If-Match'] = `"${ifMatch}"`;
-  return checked(await fetch(`${endpoint(id)}/session`, {
-    method: 'PATCH', headers, body: JSON.stringify({ session, opened }), signal,
-  }));
+  return checked(
+    await fetch(`${endpoint(id)}/session`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ session, opened }),
+      signal,
+    }),
+  );
 }
-export async function migrateBrowserDocuments(documents: readonly RecentDocument[], existingIds: ReadonlySet<string> = new Set(), signal?: AbortSignal): Promise<void> {
+export async function migrateBrowserDocuments(
+  documents: readonly RecentDocument[],
+  existingIds: ReadonlySet<string> = new Set(),
+  signal?: AbortSignal,
+): Promise<void> {
   for (const document of documents) if (!existingIds.has(document.id)) await saveSavedDocument(document, signal, true);
 }
 function snapshot(document: RecentDocument): RecentDocument {
-  return { ...document, session: { ...document.session, muted: [...document.session.muted], partInstruments: { ...document.session.partInstruments } } };
+  return {
+    ...document,
+    session: {
+      ...document.session,
+      muted: [...document.session.muted],
+      partInstruments: { ...document.session.partInstruments },
+    },
+  };
 }
 function sameContent(a: RecentDocument, b: RecentDocument) {
-  return a.xml === b.xml && a.title === b.title && a.composer === b.composer && a.source === b.source && a.jobId === b.jobId;
+  return (
+    a.xml === b.xml && a.title === b.title && a.composer === b.composer && a.source === b.source && a.jobId === b.jobId
+  );
 }
 function sameSession(a: RecentDocument, b: RecentDocument) {
   return a.opened === b.opened && JSON.stringify(a.session) === JSON.stringify(b.session);
@@ -294,9 +345,7 @@ export function createLibrarySaver(
         onState({
           id,
           status: entry.conflict ? 'conflict' : 'error',
-          error: entry.conflict
-            ? '乐谱版本冲突：已被其他窗口更新，未覆盖较新版本。'
-            : '保存到本机谱库失败。',
+          error: entry.conflict ? '乐谱版本冲突：已被其他窗口更新，未覆盖较新版本。' : '保存到本机谱库失败。',
           outboxError: entry.outboxError,
         });
       }
@@ -314,7 +363,9 @@ export function createLibrarySaver(
         if (entry.saved && sameContent(entry.saved, document) && sameSession(entry.saved, document)) {
           entry.savedRevision = currentRevision;
           if (entry.revision === currentRevision && !entry.pending) {
-            try { await deleteOutboxEntry(id, currentRevision); } catch {}
+            try {
+              await deleteOutboxEntry(id, currentRevision);
+            } catch {}
           }
           if (!entry.pending) onState({ id, status: 'saved', receipt: entry.receipt, outboxError: entry.outboxError });
           continue;
@@ -322,9 +373,10 @@ export function createLibrarySaver(
 
         onState({ id, status: 'saving', outboxError: entry.outboxError });
         try {
-          const receipt = entry.saved && sameContent(entry.saved, document)
-            ? await patchSavedSession(id, document.session, document.opened, undefined, entry.knownUpdatedAt)
-            : await saveSavedDocument(document, undefined, false, entry.knownUpdatedAt);
+          const receipt =
+            entry.saved && sameContent(entry.saved, document)
+              ? await patchSavedSession(id, document.session, document.opened, undefined, entry.knownUpdatedAt)
+              : await saveSavedDocument(document, undefined, false, entry.knownUpdatedAt);
 
           entry.saved = document;
           entry.savedRevision = currentRevision;
@@ -335,7 +387,9 @@ export function createLibrarySaver(
 
           // Only delete outbox if no newer pending snapshot was queued during in-flight save
           if (entry.revision === currentRevision && !entry.pending) {
-            try { await deleteOutboxEntry(id, currentRevision); } catch {}
+            try {
+              await deleteOutboxEntry(id, currentRevision);
+            } catch {}
           }
 
           if (!entry.pending) onState({ id, status: 'saved', receipt: entry.receipt, outboxError: entry.outboxError });
@@ -346,7 +400,12 @@ export function createLibrarySaver(
             onState({ id, status: 'conflict', error: error.message, outboxError: entry.outboxError });
           } else {
             entry.failed = true;
-            onState({ id, status: 'error', error: error instanceof Error ? error.message : '保存到本机谱库失败。', outboxError: entry.outboxError });
+            onState({
+              id,
+              status: 'error',
+              error: error instanceof Error ? error.message : '保存到本机谱库失败。',
+              outboxError: entry.outboxError,
+            });
           }
         }
       }
@@ -405,7 +464,8 @@ export function createLibrarySaver(
 
     async flush(): Promise<void> {
       for (const [id, entry] of entries) launch(id, entry);
-      while ([...entries.values()].some(entry => entry.running)) await Promise.all([...entries.values()].map(entry => entry.running));
+      while ([...entries.values()].some((entry) => entry.running))
+        await Promise.all([...entries.values()].map((entry) => entry.running));
     },
 
     retry(id?: string, force = false): void {

@@ -6,9 +6,18 @@ import { scheduleInstrumentNote } from '../../src/music/instruments';
 class EventLogParam {
   events: Array<[string, number, number?]> = [];
   value = 0;
-  setValueAtTime(val: number, time: number) { this.events.push(['set', val, time]); this.value = val; }
-  linearRampToValueAtTime(val: number, time: number) { this.events.push(['linear', val, time]); this.value = val; }
-  exponentialRampToValueAtTime(val: number, time: number) { this.events.push(['exponential', val, time]); this.value = val; }
+  setValueAtTime(val: number, time: number) {
+    this.events.push(['set', val, time]);
+    this.value = val;
+  }
+  linearRampToValueAtTime(val: number, time: number) {
+    this.events.push(['linear', val, time]);
+    this.value = val;
+  }
+  exponentialRampToValueAtTime(val: number, time: number) {
+    this.events.push(['exponential', val, time]);
+    this.value = val;
+  }
 }
 
 class FakeAudioNode {
@@ -23,8 +32,12 @@ class FakeAudioBufferSourceNode extends FakeAudioNode {
   onended?: (event?: any) => void;
   starts: Array<[number, number]> = [];
   stops: number[] = [];
-  start(when: number, offset = 0) { this.starts.push([when, offset]); }
-  stop(when: number) { this.stops.push(when); }
+  start(when: number, offset = 0) {
+    this.starts.push([when, offset]);
+  }
+  stop(when: number) {
+    this.stops.push(when);
+  }
 }
 
 class FakeGainNode extends FakeAudioNode {
@@ -37,8 +50,12 @@ class FakeOscillatorNode extends FakeAudioNode {
   onended?: (event?: any) => void;
   starts: number[] = [];
   stops: number[] = [];
-  start(when: number) { this.starts.push(when); }
-  stop(when: number) { this.stops.push(when); }
+  start(when: number) {
+    this.starts.push(when);
+  }
+  stop(when: number) {
+    this.stops.push(when);
+  }
 }
 
 class FakeTimingContext {
@@ -90,7 +107,15 @@ test('schedulePianoNote preserves absolute end time (at + duration) on late star
   // Note was scheduled at t=1.0 with duration 2.0 (intended end = 3.0)
   // Clock is already at t=1.5 (late by 0.5s)
   ctx.currentTime = 1.5;
-  const returnedSource = schedulePianoNote(ctx as unknown as BaseAudioContext, new FakeAudioNode() as unknown as AudioNode, bank, 60, 100, 1.0, 2.0);
+  const returnedSource = schedulePianoNote(
+    ctx as unknown as BaseAudioContext,
+    new FakeAudioNode() as unknown as AudioNode,
+    bank,
+    60,
+    100,
+    1.0,
+    2.0,
+  );
 
   assert.ok(returnedSource);
   const source = ctx.sources[0];
@@ -102,7 +127,7 @@ test('schedulePianoNote preserves absolute end time (at + duration) on late star
   // Stop is noteOff + PIANO_RELEASE_SECONDS = 3.0 + 0.35 = 3.35
   assert.equal(source.stops[0], 3.0 + PIANO_RELEASE_SECONDS);
   const gainEvents = ctx.gains[0].gain.events;
-  const noteOffSet = gainEvents.find(e => e[0] === 'set' && e[2] === 3.0);
+  const noteOffSet = gainEvents.find((e) => e[0] === 'set' && e[2] === 3.0);
   assert.ok(noteOffSet, 'gain must set note-off value at at + duration = 3.0');
 });
 
@@ -113,7 +138,15 @@ test('schedulePianoNote skips completely expired notes without creating audio no
   // Note scheduled at t=1.0 with duration 1.0 (ended at t=2.0)
   // Clock is at t=2.5 (completely expired)
   ctx.currentTime = 2.5;
-  const source = schedulePianoNote(ctx as unknown as BaseAudioContext, new FakeAudioNode() as unknown as AudioNode, bank, 60, 100, 1.0, 1.0);
+  const source = schedulePianoNote(
+    ctx as unknown as BaseAudioContext,
+    new FakeAudioNode() as unknown as AudioNode,
+    bank,
+    60,
+    100,
+    1.0,
+    1.0,
+  );
 
   assert.equal(source, null, 'completely expired note must return null');
   assert.equal(ctx.sources.length, 0, 'no buffer source created');
@@ -126,7 +159,14 @@ test('scheduleInstrumentNote synth-pad preserves absolute end time on late start
 
   // Late by 0.4s on 1.0s note: at=1.0, duration=1.0, currentTime=1.4
   ctx.currentTime = 1.4;
-  const voice = scheduleInstrumentNote(ctx as unknown as BaseAudioContext, new FakeAudioNode() as unknown as AudioNode, synthBank, { midi: 60, velocity: 80 }, 1.0, 1.0);
+  const voice = scheduleInstrumentNote(
+    ctx as unknown as BaseAudioContext,
+    new FakeAudioNode() as unknown as AudioNode,
+    synthBank,
+    { midi: 60, velocity: 80 },
+    1.0,
+    1.0,
+  );
   assert.ok(voice);
   // Oscillators must start at 1.4
   assert.equal(ctx.oscillators[0].starts[0], 1.4);
@@ -135,6 +175,13 @@ test('scheduleInstrumentNote synth-pad preserves absolute end time on late start
 
   // Completely expired synth note: at=1.0, duration=1.0, currentTime=2.5
   ctx.currentTime = 2.5;
-  const expiredVoice = scheduleInstrumentNote(ctx as unknown as BaseAudioContext, new FakeAudioNode() as unknown as AudioNode, synthBank, { midi: 60, velocity: 80 }, 1.0, 1.0);
+  const expiredVoice = scheduleInstrumentNote(
+    ctx as unknown as BaseAudioContext,
+    new FakeAudioNode() as unknown as AudioNode,
+    synthBank,
+    { midi: 60, velocity: 80 },
+    1.0,
+    1.0,
+  );
   assert.equal(expiredVoice, null);
 });

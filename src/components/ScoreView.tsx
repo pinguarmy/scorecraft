@@ -3,7 +3,13 @@ import type { MouseEvent } from 'react';
 import { OpenSheetMusicDisplay, CursorType } from 'opensheetmusicdisplay';
 import { repairOpenOctaveShifts, syncSourceCursor, alignCursorToSvg } from './render-compat';
 import type { CanonicalMeasure } from './render-compat';
-import { arrangeScorePages, currentScorePage, followScorePosition, freshFollowState, showScorePage } from './score-follow';
+import {
+  arrangeScorePages,
+  currentScorePage,
+  followScorePosition,
+  freshFollowState,
+  showScorePage,
+} from './score-follow';
 import type { FollowMode } from './score-follow';
 
 // OSMD 1.9.9 resets cursorsOptions to its green default on every setOptions
@@ -47,7 +53,8 @@ export default function ScoreView({
   const latest = useRef({ position, measures, playing, followMode, followEnabled });
   latest.current = { position, measures, playing, followMode, followEnabled };
   const positionCursor = useCallback(() => {
-    const osmd = osmdRef.current; const container = containerRef.current;
+    const osmd = osmdRef.current;
+    const container = containerRef.current;
     if (!osmd || !container || !osmd.IsReadyToRender() || !osmd.cursor) return;
     const current = latest.current;
     const cursor = syncSourceCursor(osmd, current.position, current.measures);
@@ -55,7 +62,12 @@ export default function ScoreView({
     container.dataset.sourceMeasure = String(cursor.measure);
     container.dataset.engravingBeat = String(cursor.engravingBeat);
     container.dataset.sourcePage = String(currentScorePage(osmd));
-    const followed = followScorePosition(osmd, container, followState.current, { mode: current.followMode, enabled: current.followEnabled, playing: current.playing, beat: current.position });
+    const followed = followScorePosition(osmd, container, followState.current, {
+      mode: current.followMode,
+      enabled: current.followEnabled,
+      playing: current.playing,
+      beat: current.position,
+    });
     if (current.followMode === 'page' && followed) setPageNumber(currentScorePage(osmd));
   }, []);
 
@@ -91,7 +103,11 @@ export default function ScoreView({
     }
 
     const currentGeneration = ++generationRef.current;
-    if (containerRef.current) { delete containerRef.current.dataset.sourceBeat; delete containerRef.current.dataset.sourceMeasure; delete containerRef.current.dataset.engravingBeat; }
+    if (containerRef.current) {
+      delete containerRef.current.dataset.sourceBeat;
+      delete containerRef.current.dataset.sourceMeasure;
+      delete containerRef.current.dataset.engravingBeat;
+    }
     setLoading(true);
     setError(null);
     setRenderWarnings([]);
@@ -119,7 +135,10 @@ export default function ScoreView({
         }
 
         // Playback owns repeat expansion. The notation cursor traverses source order only.
-        osmd.setOptions({ pageFormat: followMode === 'page' ? 'A4_P' : 'Endless', cursorsOptions: SCORE_CURSOR_OPTIONS });
+        osmd.setOptions({
+          pageFormat: followMode === 'page' ? 'A4_P' : 'Endless',
+          cursorsOptions: SCORE_CURSOR_OPTIONS,
+        });
         followState.current = freshFollowState();
         osmd.EngravingRules.CursorIgnoreRepetitions = true;
         // OSMD treats short strings without an XML declaration as URLs.
@@ -137,7 +156,8 @@ export default function ScoreView({
         setRenderWarnings(compatibility.warnings);
         osmd.render();
         const pages = arrangeScorePages(container, followMode);
-        setPageCount(pages.length || 1); setPageNumber(1);
+        setPageCount(pages.length || 1);
+        setPageNumber(1);
 
         if (osmd.cursor) {
           osmd.cursor.show();
@@ -147,7 +167,7 @@ export default function ScoreView({
 
         if (isMountedRef.current && generationRef.current === currentGeneration) {
           setLoading(false);
-          setRenderRevision(revision => revision + 1);
+          setRenderRevision((revision) => revision + 1);
           setError(null);
         }
       } catch (err) {
@@ -168,9 +188,14 @@ export default function ScoreView({
     if (loading || !osmd || !osmd.IsReadyToRender() || !osmd.cursor) return;
 
     const frame = requestAnimationFrame(() => {
-      try { positionCursor(); }
-      catch {
-        if (containerRef.current) { delete containerRef.current.dataset.sourceBeat; delete containerRef.current.dataset.sourceMeasure; delete containerRef.current.dataset.engravingBeat; }
+      try {
+        positionCursor();
+      } catch {
+        if (containerRef.current) {
+          delete containerRef.current.dataset.sourceBeat;
+          delete containerRef.current.dataset.sourceMeasure;
+          delete containerRef.current.dataset.engravingBeat;
+        }
       }
     });
     return () => cancelAnimationFrame(frame);
@@ -251,12 +276,7 @@ export default function ScoreView({
             const width = bbox.Size.width * 10 * zoom;
             const height = bbox.Size.height * 10 * zoom;
 
-            if (
-              clickX >= left &&
-              clickX <= left + width &&
-              clickY >= top &&
-              clickY <= top + height
-            ) {
+            if (clickX >= left && clickX <= left + width && clickY >= top && clickY <= top + height) {
               const sourceMeasure = gm.parentSourceMeasure;
               if (sourceMeasure) {
                 // AbsoluteTimestamp is Fraction of whole notes; convert to quarter-note beats
@@ -271,7 +291,7 @@ export default function ScoreView({
         // Fallback: click did not match a known bounding box
       }
     },
-    [onSeek, measures]
+    [onSeek, measures],
   );
 
   return (
@@ -281,27 +301,78 @@ export default function ScoreView({
           正在排版五线谱…
         </div>
       )}
-      {renderWarnings.length > 0 && <div className="notice" role="status" aria-label="乐谱排版兼容提示">{renderWarnings.map(warning => <p key={warning}>{warning}</p>)}</div>}
+      {renderWarnings.length > 0 && (
+        <div className="notice" role="status" aria-label="乐谱排版兼容提示">
+          {renderWarnings.map((warning) => (
+            <p key={warning}>{warning}</p>
+          ))}
+        </div>
+      )}
       {error && (
         <div className="score-render-error" role="alert">
           {error}
         </div>
       )}
-      {followMode === 'page' && !error && <nav aria-label="乐谱翻页" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, padding: '10px 0', color: '#6b736d' }}>
-        <button type="button" aria-label="上一页乐谱" disabled={pageNumber <= 1} onClick={() => { const page = Math.max(1, pageNumber - 1); if (containerRef.current) showScorePage(containerRef.current, page); setPageNumber(page); }}>← 上一页</button>
-        <span aria-live="polite">第 {pageNumber} / {pageCount} 页</span>
-        <button type="button" aria-label="下一页乐谱" disabled={pageNumber >= pageCount} onClick={() => { const page = Math.min(pageCount, pageNumber + 1); if (containerRef.current) showScorePage(containerRef.current, page); setPageNumber(page); }}>下一页 →</button>
-      </nav>}
+      {followMode === 'page' && !error && (
+        <nav
+          aria-label="乐谱翻页"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 18,
+            padding: '10px 0',
+            color: '#6b736d',
+          }}
+        >
+          <button
+            type="button"
+            aria-label="上一页乐谱"
+            disabled={pageNumber <= 1}
+            onClick={() => {
+              const page = Math.max(1, pageNumber - 1);
+              if (containerRef.current) showScorePage(containerRef.current, page);
+              setPageNumber(page);
+            }}
+          >
+            ← 上一页
+          </button>
+          <span aria-live="polite">
+            第 {pageNumber} / {pageCount} 页
+          </span>
+          <button
+            type="button"
+            aria-label="下一页乐谱"
+            disabled={pageNumber >= pageCount}
+            onClick={() => {
+              const page = Math.min(pageCount, pageNumber + 1);
+              if (containerRef.current) showScorePage(containerRef.current, page);
+              setPageNumber(page);
+            }}
+          >
+            下一页 →
+          </button>
+        </nav>
+      )}
       <div
         ref={containerRef}
         className="score-render-host"
         aria-label={followMode === 'page' ? '横向翻页乐谱' : '连续滚动乐谱'}
-        onScroll={e => {
+        onScroll={(e) => {
           if (followMode !== 'page') return;
           const container = e.currentTarget;
-          const pages = Array.from(container.children).filter(element => element instanceof HTMLElement && element.dataset.scorePage) as HTMLElement[];
+          const pages = Array.from(container.children).filter(
+            (element) => element instanceof HTMLElement && element.dataset.scorePage,
+          ) as HTMLElement[];
           const left = container.getBoundingClientRect().left;
-          const nearest = pages.reduce<HTMLElement | null>((best, page) => !best || Math.abs(page.getBoundingClientRect().left - left) < Math.abs(best.getBoundingClientRect().left - left) ? page : best, null);
+          const nearest = pages.reduce<HTMLElement | null>(
+            (best, page) =>
+              !best ||
+              Math.abs(page.getBoundingClientRect().left - left) < Math.abs(best.getBoundingClientRect().left - left)
+                ? page
+                : best,
+            null,
+          );
           if (nearest) setPageNumber(Number(nearest.dataset.scorePage));
         }}
         onClick={handleClick}

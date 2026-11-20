@@ -26,7 +26,9 @@ function conditionalGet(url: string, etag: string): Promise<{ status: number; ca
   return new Promise((resolve, reject) => {
     const outgoing = request(url, { headers: { 'If-None-Match': etag } }, (incoming) => {
       incoming.resume();
-      incoming.once('end', () => resolve({ status: incoming.statusCode ?? 0, cacheControl: incoming.headers['cache-control'] }));
+      incoming.once('end', () =>
+        resolve({ status: incoming.statusCode ?? 0, cacheControl: incoming.headers['cache-control'] }),
+      );
     });
     outgoing.once('error', reject);
     outgoing.end();
@@ -125,7 +127,12 @@ test('samples with stable names get a modest max-age and then revalidate by ETag
 test('API responses, including errors, are never cached', async () => {
   const f = await fixture();
   try {
-    for (const [route, status] of [['/api/health', 200], ['/api/jobs', 200], ['/api/missing', 404], ['/api/jobs/not-a-job', 404]] as const) {
+    for (const [route, status] of [
+      ['/api/health', 200],
+      ['/api/jobs', 200],
+      ['/api/missing', 404],
+      ['/api/jobs/not-a-job', 404],
+    ] as const) {
       const response = await fetch(`${f.base}${route}`);
       assert.equal(response.status, status, route);
       assert.equal(response.headers.get('cache-control'), 'no-store', route);

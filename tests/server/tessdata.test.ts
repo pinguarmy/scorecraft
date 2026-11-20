@@ -4,7 +4,9 @@ import { mkdtemp, rm, writeFile, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import { createHash } from 'node:crypto';
-const { buildLauncherScript, ENGLISH_MODEL_URL, ENGLISH_MODEL_SHA256 } = await import(path.resolve('scripts/setup-audiveris.mjs'));
+const { buildLauncherScript, ENGLISH_MODEL_URL, ENGLISH_MODEL_SHA256 } = await import(
+  path.resolve('scripts/setup-audiveris.mjs')
+);
 const { verifyEnglishModel } = await import(path.resolve('scripts/doctor.mjs'));
 
 test('launcher isolates HOME and uses pinned legacy-compatible English data not fast LSTM-only', () => {
@@ -27,12 +29,19 @@ test('doctor rejects corrupt model rather than trusting file presence', async ()
   try {
     await writeFile(path.join(directory, 'eng.traineddata'), 'invalid model');
     await assert.rejects(verifyEnglishModel(directory), /incompatible/);
-  } finally { assert(directory.startsWith(path.join(os.tmpdir(), 'scorecraft-tessdata-'))); await rm(directory, { recursive: true, force: true }); }
+  } finally {
+    assert(directory.startsWith(path.join(os.tmpdir(), 'scorecraft-tessdata-')));
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 test('installed model has exact expected bytes and legacy engine components', async () => {
   const file = path.resolve('.tools/audiveris/tessdata/eng.traineddata');
   let bytes: Buffer;
-  try { bytes = await readFile(file); } catch { return; }
+  try {
+    bytes = await readFile(file);
+  } catch {
+    return;
+  }
   assert.equal(createHash('sha256').update(bytes).digest('hex'), ENGLISH_MODEL_SHA256);
   assert.equal(bytes.length, 23466654);
   // Tessdata header stores per-component offsets. Legacy inttemp index3 must exist.

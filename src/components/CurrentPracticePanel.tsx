@@ -33,9 +33,9 @@ export function CurrentPracticePanel({
     min: 1,
     max: measureCount,
     resetKey: score,
-    onCommit: next => {
+    onCommit: (next) => {
       practice.setLoopStart(next);
-      practice.setLoopEnd(previous => Math.max(previous, next));
+      practice.setLoopEnd((previous) => Math.max(previous, next));
     },
   });
   const endField = useNumberField({
@@ -125,7 +125,7 @@ export function CurrentPracticePanel({
             className={`toggle-row ${loop ? 'enabled' : ''}`}
             disabled={!score}
             aria-pressed={loop}
-            onClick={() => practice.setLoop(v => !v)}
+            onClick={() => practice.setLoop((v) => !v)}
           >
             <span>循环这几小节</span>
             <span className="switch" />
@@ -135,7 +135,7 @@ export function CurrentPracticePanel({
               <button
                 className={`toggle-row ${followRepeats ? 'enabled' : ''}`}
                 aria-pressed={followRepeats}
-                onClick={() => practice.setFollowRepeats(v => !v)}
+                onClick={() => practice.setFollowRepeats((v) => !v)}
               >
                 <span>按谱面反复</span>
                 <span className="switch" />
@@ -153,7 +153,7 @@ export function CurrentPracticePanel({
               <button
                 aria-label="降低半音"
                 disabled={!score || transpose <= -12}
-                onClick={() => practice.setTranspose(v => v - 1)}
+                onClick={() => practice.setTranspose((v) => v - 1)}
               >
                 −
               </button>
@@ -165,7 +165,7 @@ export function CurrentPracticePanel({
               <button
                 aria-label="升高半音"
                 disabled={!score || transpose >= 12}
-                onClick={() => practice.setTranspose(v => v + 1)}
+                onClick={() => practice.setTranspose((v) => v + 1)}
               >
                 ＋
               </button>
@@ -178,7 +178,7 @@ export function CurrentPracticePanel({
           className={`metronome-button ${metronome ? 'selected' : ''}`}
           aria-pressed={metronome}
           disabled={!score}
-          onClick={() => practice.setMetronome(v => !v)}
+          onClick={() => practice.setMetronome((v) => !v)}
           title="节拍器 M"
         >
           <span className="metronome-symbol">♩</span>
@@ -190,7 +190,7 @@ export function CurrentPracticePanel({
             aria-label="播放前预备一小节"
             aria-pressed={countIn}
             disabled={!score}
-            onClick={() => practice.setCountIn(value => !value)}
+            onClick={() => practice.setCountIn((value) => !value)}
           >
             <span>播放前预备一小节</span>
             <span className="switch" />
@@ -217,8 +217,8 @@ export function CurrentPracticePanel({
                   aria-label={`${muted.includes(part.id) ? '取消静音' : '静音'} ${part.name}`}
                   aria-pressed={muted.includes(part.id)}
                   onClick={() =>
-                    practice.setMuted(items =>
-                      items.includes(part.id) ? items.filter(id => id !== part.id) : [...items, part.id],
+                    practice.setMuted((items) =>
+                      items.includes(part.id) ? items.filter((id) => id !== part.id) : [...items, part.id],
                     )
                   }
                 >
@@ -242,7 +242,7 @@ export function CurrentPracticePanel({
       <form
         className="measure-jump"
         noValidate
-        onSubmit={event => {
+        onSubmit={(event) => {
           event.preventDefault();
           jump.jumpToMeasure();
         }}
@@ -264,7 +264,7 @@ export function CurrentPracticePanel({
           onBlur={() => {
             jump.jumpFocused.current = false;
           }}
-          onChange={event => jump.changeJumpMeasure(event.target.value)}
+          onChange={(event) => jump.changeJumpMeasure(event.target.value)}
         />
         <button className="button quiet" disabled={!score} type="submit">
           跳转

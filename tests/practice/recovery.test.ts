@@ -81,7 +81,11 @@ function setupMockIndexedDB() {
                   setTimeout(() => tx.oncomplete?.({}), 0);
                 },
                 get: (key: string) => {
-                  const req: any = { result: map.get(key) ? JSON.parse(JSON.stringify(map.get(key))) : undefined, onsuccess: null, onerror: null };
+                  const req: any = {
+                    result: map.get(key) ? JSON.parse(JSON.stringify(map.get(key))) : undefined,
+                    onsuccess: null,
+                    onerror: null,
+                  };
                   setTimeout(() => {
                     req.onsuccess?.({ target: req });
                     setTimeout(() => tx.oncomplete?.({}), 0);
@@ -89,7 +93,11 @@ function setupMockIndexedDB() {
                   return req;
                 },
                 getAll: () => {
-                  const req: any = { result: [...map.values()].map(v => JSON.parse(JSON.stringify(v))), onsuccess: null, onerror: null };
+                  const req: any = {
+                    result: [...map.values()].map((v) => JSON.parse(JSON.stringify(v))),
+                    onsuccess: null,
+                    onerror: null,
+                  };
                   setTimeout(() => {
                     req.onsuccess?.({ target: req });
                     setTimeout(() => tx.oncomplete?.({}), 0);
@@ -166,7 +174,7 @@ test('createLibrarySaver records conflict state on 409 and force retry clears ve
       return response({ id: doc.id, updatedAt: 3000, xmlBytes: 500000 });
     },
     async () => {
-      const saver = createLibrarySaver(state => states.push(state.status));
+      const saver = createLibrarySaver((state) => states.push(state.status));
       saver.setKnownVersion(doc.id, 1000);
       saver.enqueue(doc);
       await saver.flush();
@@ -211,14 +219,17 @@ test('IndexedDB pending outbox persists before network save and cleans up after 
     // 2. createLibrarySaver integrates with outbox: persists on enqueue, clears on save
     let releaseNet!: () => void;
     await withFetch(
-      () => new Promise(resolve => { releaseNet = () => resolve(response({ id: doc.id, updatedAt: 5000, xmlBytes: doc.xml.length })); }),
+      () =>
+        new Promise((resolve) => {
+          releaseNet = () => resolve(response({ id: doc.id, updatedAt: 5000, xmlBytes: doc.xml.length }));
+        }),
       async () => {
         const saver = createLibrarySaver(() => {});
         saver.enqueue(doc);
 
         // Before network releases, the outbox already has the pending document
         // (Wait for microtasks)
-        await new Promise(r => setTimeout(r, 10));
+        await new Promise((r) => setTimeout(r, 10));
         const inFlight = await getOutboxDocument(doc.id);
         assert(inFlight, 'pending document must be in outbox before network completes');
         assert.equal(inFlight.id, doc.id);
@@ -228,7 +239,7 @@ test('IndexedDB pending outbox persists before network save and cleans up after 
         await saver.flush();
 
         // After successful save, outbox is cleared
-        await new Promise(r => setTimeout(r, 10));
+        await new Promise((r) => setTimeout(r, 10));
         const postSave = await getOutboxDocument(doc.id);
         assert.equal(postSave, null, 'outbox must be deleted after successful save');
       },
@@ -242,7 +253,7 @@ test('IndexedDB pending outbox persists before network save and cleans up after 
         saver.enqueue(doc);
         await saver.flush();
 
-        await new Promise(r => setTimeout(r, 10));
+        await new Promise((r) => setTimeout(r, 10));
         const retained = await getOutboxDocument(doc.id);
         assert(retained, 'outbox must retain pending document when network fails');
         assert.equal(retained.xml, doc.xml);
@@ -270,10 +281,14 @@ test('slow PUT A -> enqueue B -> when A finishes outbox still contains B', async
         putCount++;
         if (putCount === 1) {
           assert.equal(JSON.parse(String(init?.body)).title, 'Version A');
-          return new Promise(resolve => { resolvePutA = resolve; });
+          return new Promise((resolve) => {
+            resolvePutA = resolve;
+          });
         } else {
           assert.equal(JSON.parse(String(init?.body)).title, 'Version B');
-          return new Promise(resolve => { resolvePutB = resolve; });
+          return new Promise((resolve) => {
+            resolvePutB = resolve;
+          });
         }
       },
       async () => {
@@ -281,16 +296,16 @@ test('slow PUT A -> enqueue B -> when A finishes outbox still contains B', async
 
         // 1. Enqueue A (slow PUT)
         saver.enqueue(docA);
-        await new Promise(r => setTimeout(r, 15));
+        await new Promise((r) => setTimeout(r, 15));
         assert.equal(putCount, 1);
 
         // 2. While A is in-flight, user edits to B
         saver.enqueue(docB);
-        await new Promise(r => setTimeout(r, 15));
+        await new Promise((r) => setTimeout(r, 15));
 
         // 3. Complete PUT A
         resolvePutA(response({ id: docA.id, updatedAt: 1001, xmlBytes: docA.xml.length }));
-        await new Promise(r => setTimeout(r, 20));
+        await new Promise((r) => setTimeout(r, 20));
 
         // Crucial assertion: Outbox MUST NOT be deleted when A finishes! It must contain Version B!
         const outboxDuringB = await getOutboxDocument(docA.id);
@@ -304,7 +319,7 @@ test('slow PUT A -> enqueue B -> when A finishes outbox still contains B', async
         await saver.flush();
 
         // 5. Now that B completed without further edits, outbox is cleaned up
-        await new Promise(r => setTimeout(r, 15));
+        await new Promise((r) => setTimeout(r, 15));
         const outboxAfterB = await getOutboxDocument(docA.id);
         assert.equal(outboxAfterB, null, 'outbox must be cleared only after the latest snapshot B finishes');
       },
@@ -417,20 +432,22 @@ test('IndexedDB write failure produces explicit outboxError in save state and do
       () => response({ id: doc.id, updatedAt: 2000, xmlBytes: doc.xml.length }),
       async () => {
         const saver = createLibrarySaver(
-          state => states.push(state),
-          (_id, err) => { reportedOutboxError = err; },
+          (state) => states.push(state),
+          (_id, err) => {
+            reportedOutboxError = err;
+          },
         );
         saver.enqueue(doc);
         await saver.flush();
 
         // Wait for outbox write attempt to reject
-        await new Promise(r => setTimeout(r, 20));
+        await new Promise((r) => setTimeout(r, 20));
 
         assert(reportedOutboxError, 'onOutboxError must be called when IDB fails');
         assert.match(reportedOutboxError.message, /QuotaExceededError|打开本地离线存储失败/);
 
         // State must report outboxError
-        const stateWithOutboxError = states.find(s => s.outboxError);
+        const stateWithOutboxError = states.find((s) => s.outboxError);
         assert(stateWithOutboxError, 'state must carry outboxError');
         assert.match(stateWithOutboxError.outboxError, /本地离线备份失败/);
       },

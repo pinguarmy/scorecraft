@@ -89,17 +89,22 @@ export async function closeMobileSheet(page: Page, viaEscape = false): Promise<v
  * Generates an authored unique MusicXML fixture with a given title.
  * Used to avoid polluting shared test servers or collisions with previous runs.
  */
-export function createAuthoredScoreXml(title: string, options: {
-  measures?: number;
-  composer?: string;
-  largePadding?: boolean;
-  parts?: { id: string; name: string }[];
-} = {}): string {
+export function createAuthoredScoreXml(
+  title: string,
+  options: {
+    measures?: number;
+    composer?: string;
+    largePadding?: boolean;
+    parts?: { id: string; name: string }[];
+  } = {},
+): string {
   const composer = options.composer ?? 'ScoreCraft Authored Test';
   const padding = options.largePadding ? `<!--${'Authored large spacing padding '.repeat(20000)}-->` : '';
   const parts = options.parts ?? [{ id: 'P1', name: 'Piano' }];
 
-  const partListXml = parts.map(p => `<score-part id="${p.id}"><part-name>${p.name}</part-name></score-part>`).join('');
+  const partListXml = parts
+    .map((p) => `<score-part id="${p.id}"><part-name>${p.name}</part-name></score-part>`)
+    .join('');
   const measureCount = options.measures ?? 4;
 
   const measuresXml = Array.from({ length: measureCount }, (_, i) => {
@@ -119,7 +124,7 @@ export function createAuthoredScoreXml(title: string, options: {
     </measure>`;
   }).join('');
 
-  const partsXml = parts.map(p => `<part id="${p.id}">${measuresXml}</part>`).join('');
+  const partsXml = parts.map((p) => `<part id="${p.id}">${measuresXml}</part>`).join('');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <score-partwise version="3.1">

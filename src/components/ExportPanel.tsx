@@ -28,7 +28,7 @@ export function ExportPanel({ score, exporter, loopStart, loopEnd }: Props) {
           className="export-scope-select"
           value={exportScope}
           disabled={!score || exporting}
-          onChange={e => exporter.setExportScope(e.target.value === 'excerpt' ? 'excerpt' : 'full')}
+          onChange={(e) => exporter.setExportScope(e.target.value === 'excerpt' ? 'excerpt' : 'full')}
         >
           <option value="full">整首</option>
           <option value="excerpt">所选小节</option>

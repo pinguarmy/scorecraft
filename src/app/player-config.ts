@@ -30,7 +30,7 @@ export function configurePlayer(p: ConfigurablePlayer | null, next: Score, sessi
   p.setCountIn(session.countIn);
   p.setPartInstruments(instrumentMap(session.partInstruments ?? {}, next));
   p.setMutedParts(
-    session.solo ? next.parts.filter(part => part.id !== session.solo).map(part => part.id) : session.muted,
+    session.solo ? next.parts.filter((part) => part.id !== session.solo).map((part) => part.id) : session.muted,
   );
   p.setFollowRepeats(session.followRepeats);
   const last = next.measures[session.loopEnd - 1];

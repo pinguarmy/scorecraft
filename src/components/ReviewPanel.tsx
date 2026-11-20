@@ -103,7 +103,7 @@ function MeterCorrectionForm({ score, meter }: { score: Score | null; meter: Sco
   return (
     <form
       className="meter-correction-form"
-      onSubmit={e => {
+      onSubmit={(e) => {
         e.preventDefault();
         meter.request();
       }}
@@ -121,7 +121,7 @@ function MeterCorrectionForm({ score, meter }: { score: Score | null; meter: Sco
             step={1}
             value={meter.measure}
             disabled={!score}
-            onChange={e => meter.change('measure', Number(e.target.value))}
+            onChange={(e) => meter.change('measure', Number(e.target.value))}
           />
         </label>
         <label>
@@ -134,7 +134,7 @@ function MeterCorrectionForm({ score, meter }: { score: Score | null; meter: Sco
             step={1}
             value={meter.beats}
             disabled={!score}
-            onChange={e => meter.change('beats', Number(e.target.value))}
+            onChange={(e) => meter.change('beats', Number(e.target.value))}
           />
         </label>
         <label>
@@ -143,9 +143,9 @@ function MeterCorrectionForm({ score, meter }: { score: Score | null; meter: Sco
             aria-label="拍号分母"
             value={meter.beatType}
             disabled={!score}
-            onChange={e => meter.change('beatType', Number(e.target.value))}
+            onChange={(e) => meter.change('beatType', Number(e.target.value))}
           >
-            {beatTypes.map(value => (
+            {beatTypes.map((value) => (
               <option value={value} key={value}>
                 {value}
               </option>
@@ -179,8 +179,8 @@ function PartNameEditor({ score, partNames }: { score: Score | null; partNames: 
     <section className="inspector-section part-names">
       <h3>声部名称</h3>
       {score?.parts
-        .filter(part => part.sourcePartId)
-        .map(part => (
+        .filter((part) => part.sourcePartId)
+        .map((part) => (
           <div className="part-name-editor" key={part.id}>
             <div>
               <span>{part.name}</span>
@@ -194,7 +194,7 @@ function PartNameEditor({ score, partNames }: { score: Score | null; partNames: 
             </div>
             {partNames.renamingPartId === part.id && (
               <form
-                onSubmit={event => {
+                onSubmit={(event) => {
                   event.preventDefault();
                   void partNames.save();
                 }}
@@ -204,7 +204,7 @@ function PartNameEditor({ score, partNames }: { score: Score | null; partNames: 
                   <input
                     value={partNames.draft}
                     maxLength={120}
-                    onChange={event => partNames.setDraft(event.target.value)}
+                    onChange={(event) => partNames.setDraft(event.target.value)}
                   />
                 </label>
                 <button className="button quiet" type="submit">
@@ -241,15 +241,15 @@ function NoteCorrection({ score, currentMeasureIndex, notes, history }: NoteCorr
           id="note-select"
           value={notes.selectedNoteId || ''}
           disabled={!score}
-          onChange={e => notes.selectNote(e.target.value)}
+          onChange={(e) => notes.selectNote(e.target.value)}
         >
           <option value="">选择一个音符</option>
-          {selectedNote && !visibleNotes.some(n => n.id === selectedNote.id) && (
+          {selectedNote && !visibleNotes.some((n) => n.id === selectedNote.id) && (
             <option value={selectedNote.id}>
               第 {selectedNote.measure} 小节 · {noteLabel(score, selectedNote)}
             </option>
           )}
-          {visibleNotes.map(note => (
+          {visibleNotes.map((note) => (
             <option value={note.id} key={note.id}>
               {noteLabel(score, note)}
             </option>
@@ -267,7 +267,7 @@ function NoteCorrection({ score, currentMeasureIndex, notes, history }: NoteCorr
             <label className="field-label" htmlFor="correct-pitch">
               改为 <span>{pitchName(editPitch)}</span>
             </label>
-            <select id="correct-pitch" value={editPitch} onChange={e => notes.setEditPitch(Number(e.target.value))}>
+            <select id="correct-pitch" value={editPitch} onChange={(e) => notes.setEditPitch(Number(e.target.value))}>
               {Array.from({ length: 128 }, (_, midi) => (
                 <option key={midi} value={midi}>
                   {pitchName(midi)} · MIDI {midi}

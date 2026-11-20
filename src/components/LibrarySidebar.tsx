@@ -91,7 +91,7 @@ export function LibrarySidebar(props: Props) {
             </p>
           )}
           <ul className="saved-document-list">
-            {documents.map(item => (
+            {documents.map((item) => (
               <li key={item.id} data-document-id={item.id}>
                 <button
                   className={activeDocumentId === item.id ? 'recent-item active' : 'recent-item'}
@@ -103,7 +103,7 @@ export function LibrarySidebar(props: Props) {
                     <strong>{item.title}</strong>
                     <small>
                       {libraryItemStateLabels[item.state]}
-                      {item.jobId && scans.scanJobs.some(job => job.id === item.jobId) ? ' · 含扫描档案' : ''}
+                      {item.jobId && scans.scanJobs.some((job) => job.id === item.jobId) ? ' · 含扫描档案' : ''}
                     </small>
                   </span>
                   {item.state === 'unsaved' && <span className="unsaved-badge">未保存</span>}

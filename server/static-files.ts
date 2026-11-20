@@ -50,23 +50,32 @@ export function createStaticRouter(options: { root: string; dist: string }) {
   const { root, dist } = options;
   const router = express.Router();
 
-  router.use(express.static(dist, {
-    dotfiles: 'deny',
-    index: false,
-    setHeaders: (res, file) => {
-      const relative = path.relative(dist, file).split(path.sep).join('/');
-      if (relative === 'index.html') setDocumentHeaders(res);
-      else if (HASHED_ASSET.test(relative)) res.setHeader('Cache-Control', IMMUTABLE_CACHE);
-      else res.setHeader('Cache-Control', UNHASHED_CACHE);
-    },
-  }));
+  router.use(
+    express.static(dist, {
+      dotfiles: 'deny',
+      index: false,
+      setHeaders: (res, file) => {
+        const relative = path.relative(dist, file).split(path.sep).join('/');
+        if (relative === 'index.html') setDocumentHeaders(res);
+        else if (HASHED_ASSET.test(relative)) res.setHeader('Cache-Control', IMMUTABLE_CACHE);
+        else res.setHeader('Cache-Control', UNHASHED_CACHE);
+      },
+    }),
+  );
   // Serve the source sample in development too; never expose project-root files.
-  router.use('/samples', express.static(path.join(root, 'public/samples'), {
-    dotfiles: 'deny',
-    setHeaders: (res) => res.setHeader('Cache-Control', UNHASHED_CACHE),
-  }));
+  router.use(
+    '/samples',
+    express.static(path.join(root, 'public/samples'), {
+      dotfiles: 'deny',
+      setHeaders: (res) => res.setHeader('Cache-Control', UNHASHED_CACHE),
+    }),
+  );
   router.use((req, res, next) => {
-    if (req.method !== 'GET' || path.extname(req.path) || req.path.split('/').some((segment) => segment.startsWith('.'))) {
+    if (
+      req.method !== 'GET' ||
+      path.extname(req.path) ||
+      req.path.split('/').some((segment) => segment.startsWith('.'))
+    ) {
       res.status(404).json({ message: '文件不存在。' });
       return;
     }

@@ -51,7 +51,7 @@ test('library items merge sources with later sources overriding earlier ones', (
   };
   const items = buildLibraryItems(recent, saved, states, new Map([['c', snapshot]]), []);
   assert.deepEqual(
-    items.map(item => [item.id, item.title, item.state, item.opened]),
+    items.map((item) => [item.id, item.title, item.state, item.opened]),
     [
       ['c', 'edited c', 'unsaved', 40],
       ['b', 'saved b', 'saved', 25],
@@ -70,7 +70,9 @@ test('save states map to saved, saving and unsaved labels', () => {
     z: { id: 'z', status: 'conflict' },
     w: { id: 'w', status: 'error' },
   };
-  const byId = Object.fromEntries(buildLibraryItems([], [], states, snapshots, []).map(item => [item.id, item.state]));
+  const byId = Object.fromEntries(
+    buildLibraryItems([], [], states, snapshots, []).map((item) => [item.id, item.state]),
+  );
   assert.deepEqual(byId, { x: 'saved', y: 'saving', z: 'unsaved', w: 'unsaved' });
 });
 
@@ -85,7 +87,7 @@ test('only finished scans without a document are listed as scans', () => {
   ];
   const items = buildLibraryItems(recent, saved, {}, new Map(), jobs);
   assert.deepEqual(
-    items.map(item => [item.id, item.state]),
+    items.map((item) => [item.id, item.state]),
     [
       [`job:${jobB}`, 'saved'],
       ['sha', 'cached'],
@@ -152,7 +154,7 @@ test('configurePlayer loads the score and applies the whole session before seeki
       'setFollowRepeats',
       'setLoop',
       'seek',
-    ].map(name => [name, record(name)]),
+    ].map((name) => [name, record(name)]),
   ) as unknown as ConfigurablePlayer;
   configurePlayer(player, score, session);
   assert.deepEqual(calls, [

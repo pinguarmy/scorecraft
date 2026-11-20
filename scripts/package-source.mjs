@@ -5,15 +5,19 @@ import { zipSync } from 'fflate';
 
 const root = await realpath(fileURLToPath(new URL('../', import.meta.url)));
 const manifest = await readFile(path.join(root, 'source-files.txt'), 'utf8');
-const paths = manifest.split(/\r?\n/).filter(line => line && !line.startsWith('#'));
+const paths = manifest.split(/\r?\n/).filter((line) => line && !line.startsWith('#'));
 const files = Object.create(null);
 
 for (const name of paths) {
-  if (name.includes('\\') || name.includes(':') || name.split('/').some(part => !part || part === '.' || part === '..')) {
+  if (
+    name.includes('\\') ||
+    name.includes(':') ||
+    name.split('/').some((part) => !part || part === '.' || part === '..')
+  ) {
     throw new Error(`Invalid source archive path: ${name}`);
   }
   const file = path.join(root, name);
-  if (await realpath(file) !== file) throw new Error(`Source archive cannot include symlinks: ${name}`);
+  if ((await realpath(file)) !== file) throw new Error(`Source archive cannot include symlinks: ${name}`);
   files[`scorecraft/${name}`] = new Uint8Array(await readFile(file));
 }
 

@@ -6,7 +6,9 @@ const originalXml = (title: string, large = false) => {
   return `<score-partwise><work><work-title>${title}</work-title></work>${padding}<part-list><score-part id="P"><part-name>Piano</part-name></score-part></part-list><part id="P"><measure number="1"><attributes><divisions>1</divisions><time><beats>4</beats><beat-type>4</beat-type></time><clef><sign>G</sign><line>2</line></clef></attributes><note><pitch><step>C</step><octave>4</octave></pitch><duration>4</duration><voice>1</voice><type>whole</type></note></measure></part></score-partwise>`;
 };
 
-test('A: delayed large score first PUT -> close/reload while in-flight -> IndexedDB outbox restores to UI as unsaved -> retry saves and reads back full XML', async ({ browser }) => {
+test('A: delayed large score first PUT -> close/reload while in-flight -> IndexedDB outbox restores to UI as unsaved -> retry saves and reads back full XML', async ({
+  browser,
+}) => {
   const context = await browser.newContext();
   let page = await context.newPage();
   const title = `Delayed large score outbox reload ${Date.now()}`;
@@ -14,10 +16,12 @@ test('A: delayed large score first PUT -> close/reload while in-flight -> Indexe
 
   // 1. Intercept PUT to hold it in-flight indefinitely
   let releasePut!: () => void;
-  const putHeld = new Promise<void>(resolve => { releasePut = resolve; });
+  const putHeld = new Promise<void>((resolve) => {
+    releasePut = resolve;
+  });
   let putStarted = false;
 
-  await page.route('**/api/library/**', async route => {
+  await page.route('**/api/library/**', async (route) => {
     if (route.request().method() === 'PUT') {
       putStarted = true;
       await putHeld;
@@ -64,19 +68,21 @@ test('A: delayed large score first PUT -> close/reload while in-flight -> Indexe
   await expect(page.locator('.library-save-status')).toContainText('已保存到本机谱库');
 
   // 8. Verify on server that the score has been saved and full XML (>350k) is intact
-  const list = await page.request.get('/api/library').then(r => r.json());
+  const list = await page.request.get('/api/library').then((r) => r.json());
   const meta = list.documents.find((d: any) => d.title === title);
   expect(meta).toBeTruthy();
   expect(meta.xmlBytes).toBeGreaterThan(350_000);
 
-  const serverDoc = await page.request.get(`/api/library/${encodeURIComponent(meta.id)}`).then(r => r.json());
+  const serverDoc = await page.request.get(`/api/library/${encodeURIComponent(meta.id)}`).then((r) => r.json());
   expect(serverDoc.xml).toContain('Large authored padding');
   expect(serverDoc.title).toBe(title);
 
   await context.close();
 });
 
-test('B: two tabs open same score -> Tab A edits and saves -> Tab B edits older version -> Tab B gets 409 conflict and Tab A is preserved', async ({ browser }) => {
+test('B: two tabs open same score -> Tab A edits and saves -> Tab B edits older version -> Tab B gets 409 conflict and Tab A is preserved', async ({
+  browser,
+}) => {
   const context = await browser.newContext();
   const pageA = await context.newPage();
   const title = `Concurrency 409 protection ${Date.now()}`;
@@ -92,7 +98,7 @@ test('B: two tabs open same score -> Tab A edits and saves -> Tab B edits older 
   await expect(pageA.locator('.score-heading h2')).toHaveText(title);
   await expect(pageA.locator('.library-save-status')).toContainText('已保存到本机谱库');
 
-  const list = await pageA.request.get('/api/library').then(r => r.json());
+  const list = await pageA.request.get('/api/library').then((r) => r.json());
   const meta = list.documents.find((d: any) => d.title === title);
   expect(meta).toBeTruthy();
 
@@ -112,10 +118,12 @@ test('B: two tabs open same score -> Tab A edits and saves -> Tab B edits older 
   await expect(pageA.locator('.library-save-status')).toContainText('已保存到本机谱库');
 
   // Verify server has Tab A's version with step D
-  await expect.poll(async () => {
-    const doc = await pageA.request.get(`/api/library/${encodeURIComponent(meta.id)}`).then(r => r.json());
-    return doc.xml.includes('<step>D</step>');
-  }).toBe(true);
+  await expect
+    .poll(async () => {
+      const doc = await pageA.request.get(`/api/library/${encodeURIComponent(meta.id)}`).then((r) => r.json());
+      return doc.xml.includes('<step>D</step>');
+    })
+    .toBe(true);
 
   // 4. Tab B (which still has base version before Tab A's edit) edits pitch from C4 (60) to E4 (64)
   await ensureReviewDetails(pageB);
@@ -130,7 +138,7 @@ test('B: two tabs open same score -> Tab A edits and saves -> Tab B edits older 
   await expect(pageB.getByRole('button', { name: '覆盖保存', exact: true })).toBeVisible();
 
   // 6. Verify server STILL has Tab A's edit (D4), and was NOT overwritten by Tab B
-  const serverDoc = await pageB.request.get(`/api/library/${encodeURIComponent(meta.id)}`).then(r => r.json());
+  const serverDoc = await pageB.request.get(`/api/library/${encodeURIComponent(meta.id)}`).then((r) => r.json());
   expect(serverDoc.xml).toContain('<step>D</step>');
   expect(serverDoc.xml).not.toContain('<step>E</step>');
 

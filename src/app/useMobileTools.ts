@@ -49,7 +49,7 @@ export function useMobileTools(reviewRef: RefObject<HTMLDetailsElement | null>) 
     document.body.style.overflow = 'hidden';
     // 可聚焦元素：可见，且不在已折叠的 <details> 里（折叠分区自身的 summary 除外）。
     const focusable = () =>
-      Array.from(panel?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []).filter(element => {
+      Array.from(panel?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []).filter((element) => {
         if (!element.checkVisibility()) return false;
         for (let ancestor = element.parentElement; ancestor && ancestor !== panel; ancestor = ancestor.parentElement) {
           if (

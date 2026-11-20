@@ -39,7 +39,7 @@ export function useScanJobs() {
     try {
       await deleteScanJob(job.id);
       deletedJobs.current.add(job.id);
-      setScanJobs(jobs => jobs.filter(item => item.id !== job.id));
+      setScanJobs((jobs) => jobs.filter((item) => item.id !== job.id));
       setDeleteJobId(null);
       onDeleted(job.id);
     } catch (e) {

@@ -1,4 +1,5 @@
-/* Partials are imported in original cascade order; concatenating 01-08 reproduces the former src/styles.css byte for byte. */
+/* Partials are imported in the original cascade order of the former src/styles.css. Later partials override
+   earlier ones, so the order is load-bearing. */
 /* 01 base: tokens, reset, masthead, library, desk, transport, inspector and the first components */
 @import './01-base-and-components.css';
 /* 02 the original responsive blocks (>=1550, <=1180, <=760, <=370) as first written */

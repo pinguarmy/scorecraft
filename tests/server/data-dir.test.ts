@@ -13,10 +13,21 @@ const engine = {
   },
 };
 const id = `sha256:${'1'.padStart(64, '0')}`;
-const document = { id, title: 'Study', composer: '', source: 'fixture.musicxml', opened: 1, xml: '<score-partwise/>', session: {} };
+const document = {
+  id,
+  title: 'Study',
+  composer: '',
+  source: 'fixture.musicxml',
+  opened: 1,
+  xml: '<score-partwise/>',
+  session: {},
+};
 
 async function exists(target: string) {
-  return access(target).then(() => true, () => false);
+  return access(target).then(
+    () => true,
+    () => false,
+  );
 }
 
 test('libraryDir and dataDir keep saved scores and scan jobs out of the default .data folders', async () => {
@@ -43,12 +54,12 @@ test('libraryDir and dataDir keep saved scores and scan jobs out of the default 
     assert.equal(await exists(path.join(root, '.data/library')), false);
     assert.equal(await exists(path.join(root, '.data/jobs')), false);
     assert.equal(await exists(path.join(root, '.data/e2e/jobs')), true);
-    const listed = await fetch(`${base}/api/library`).then(response => response.json());
+    const listed = await fetch(`${base}/api/library`).then((response) => response.json());
     assert.equal(listed.documents.length, 1);
   } finally {
     instance.close();
     server.closeAllConnections();
-    await new Promise<void>(resolve => server.close(() => resolve()));
+    await new Promise<void>((resolve) => server.close(() => resolve()));
     await rm(root, { recursive: true, force: true });
   }
 });

@@ -114,7 +114,9 @@ export function createRecognizeRouter(context: JobRouteContext) {
         return;
       }
       const name = decodeFilename(req.file.originalname);
-      const digest = createHash('sha256').update(await readFile(req.file.path)).digest('hex');
+      const digest = createHash('sha256')
+        .update(await readFile(req.file.path))
+        .digest('hex');
       const forced = req.query.force === '1';
       const release = forced
         ? undefined

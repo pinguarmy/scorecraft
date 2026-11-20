@@ -23,7 +23,7 @@ test('a checkout below a dot-directory serves the app, licence and source, and s
     'dist/.secret': 'dist dotfile',
     'dist/assets/.hidden.js': 'hidden asset',
     'dist/.git/config': 'dot-directory file',
-    'LICENSE': 'AGPL test license',
+    LICENSE: 'AGPL test license',
     '.data/source.zip': 'PK fake source archive',
   };
   for (const [name, content] of Object.entries(files)) {

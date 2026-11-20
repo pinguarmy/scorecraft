@@ -62,8 +62,8 @@ export function useKeyboardShortcuts({
         e.preventDefault();
         seek(0);
       }
-      if (e.key.toLowerCase() === 'm') setMetronome(v => !v);
-      if (e.key.toLowerCase() === 'l') setLoop(v => !v);
+      if (e.key.toLowerCase() === 'm') setMetronome((v) => !v);
+      if (e.key.toLowerCase() === 'l') setLoop((v) => !v);
       if (e.key === '?') openShortcuts();
     }
     window.addEventListener('keydown', keydown);

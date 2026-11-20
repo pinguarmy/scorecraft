@@ -84,7 +84,7 @@ export async function listScanJobs(): Promise<ScanJobList> {
   const data = (await res.json()) as ScanJobList;
   if (!Array.isArray(data.jobs)) throw new Error('扫描列表格式无效。');
   return {
-    jobs: data.jobs.filter(job => typeof job.id === 'string' && validJobId(job.id)).slice(0, 100),
+    jobs: data.jobs.filter((job) => typeof job.id === 'string' && validJobId(job.id)).slice(0, 100),
     retentionDays: Number.isFinite(data.retentionDays) ? data.retentionDays : 7,
   };
 }
@@ -99,7 +99,7 @@ export async function getScanJob(id: string, signal?: AbortSignal): Promise<Scan
 /** GET /api/jobs/:id，但任何失败都返回 null（仅用于补充识别提示）。 */
 export function getScanJobIfAvailable(id: string, signal?: AbortSignal): Promise<ScanResult | null> {
   return fetch(jobPath(id), { signal })
-    .then(response => (response.ok ? (response.json() as Promise<ScanResult>) : null))
+    .then((response) => (response.ok ? (response.json() as Promise<ScanResult>) : null))
     .catch(() => null);
 }
 

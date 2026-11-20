@@ -17,15 +17,17 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: [['list'], ['html', { open: 'never' }]],
-  ...(externalUrl ? {} : {
-    webServer: {
-      command: `node -e "require('node:fs').rmSync('.data/e2e',{recursive:true,force:true})" && npm start`,
-      url: `${baseURL}/api/health`,
-      env: { PORT: String(port), SCORECRAFT_DATA_DIR: '.data/e2e' },
-      reuseExistingServer: !process.env.CI,
-      timeout: 60_000,
-    },
-  }),
+  ...(externalUrl
+    ? {}
+    : {
+        webServer: {
+          command: `node -e "require('node:fs').rmSync('.data/e2e',{recursive:true,force:true})" && npm start`,
+          url: `${baseURL}/api/health`,
+          env: { PORT: String(port), SCORECRAFT_DATA_DIR: '.data/e2e' },
+          reuseExistingServer: !process.env.CI,
+          timeout: 60_000,
+        },
+      }),
   use: {
     baseURL,
     trace: 'retain-on-failure',

@@ -28,7 +28,13 @@ type Props = {
 export function Transport(props: Props) {
   const { score, playback, currentMeasureIndex, tempo } = props;
   const { position, playing, audioState, audioMessage, countInRemaining, countInCancelled } = playback;
-  const tempoField = useNumberField({ value: tempo, min: 30, max: 240, onCommit: props.onTempoChange, resetKey: score });
+  const tempoField = useNumberField({
+    value: tempo,
+    min: 30,
+    max: 240,
+    onCommit: props.onTempoChange,
+    resetKey: score,
+  });
   return (
     <section className="transport" aria-label="播放控制" inert={props.inert ? true : undefined}>
       <div className="section-heading transport-heading">
@@ -47,7 +53,7 @@ export function Transport(props: Props) {
             max={score?.totalBeats || 1}
             step="0.05"
             value={Math.min(position, score?.totalBeats || 1)}
-            onChange={e => playback.seek(Number(e.target.value))}
+            onChange={(e) => playback.seek(Number(e.target.value))}
             disabled={!score}
             style={
               {
@@ -131,7 +137,7 @@ export function Transport(props: Props) {
               min="30"
               max="240"
               value={tempo}
-              onChange={e => props.onTempoChange(Number(e.target.value))}
+              onChange={(e) => props.onTempoChange(Number(e.target.value))}
               disabled={!score}
             />
           </div>

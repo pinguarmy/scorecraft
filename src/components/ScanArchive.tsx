@@ -35,7 +35,7 @@ export function ScanArchive({ scans, onOpenScan, onRetryWithoutCover, onDeleteSc
           aria-label="扫描档案"
           aria-expanded={scanOpen}
           onClick={() => {
-            setScanOpen(v => !v);
+            setScanOpen((v) => !v);
             if (!scanOpen) void scans.refreshScans();
           }}
         >
@@ -65,7 +65,7 @@ export function ScanArchive({ scans, onOpenScan, onRetryWithoutCover, onDeleteSc
           )}
           {!scanBusy && !scanJobs.length && !scanError && <p className="micro-copy">还没有扫描档案。</p>}
           <ul className="scan-list">
-            {scanJobs.map(job => (
+            {scanJobs.map((job) => (
               <li key={job.id} data-job-id={job.id}>
                 <div className="scan-item-heading">
                   <strong title={job.originalName || '历史扫描'}>{job.originalName || '历史扫描'}</strong>

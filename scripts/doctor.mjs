@@ -19,7 +19,7 @@ async function checkAudiveris(binPath) {
     return {
       available: false,
       path: binPath,
-      error: `Executable not found at ${binPath}`
+      error: `Executable not found at ${binPath}`,
     };
   }
 
@@ -30,7 +30,7 @@ async function checkAudiveris(binPath) {
       return {
         available: false,
         path: binPath,
-        error: `File exists at ${binPath} but is not marked executable (chmod +x required)`
+        error: `File exists at ${binPath} but is not marked executable (chmod +x required)`,
       };
     }
 
@@ -45,13 +45,13 @@ async function checkAudiveris(binPath) {
       path: binPath,
       version: versionMatch ? versionMatch[1].trim() : 'Unknown',
       ocr: ocrMatch ? ocrMatch[1].trim() : 'Unknown',
-      raw: output.trim()
+      raw: output.trim(),
     };
   } catch (err) {
     return {
       available: false,
       path: binPath,
-      error: err?.message || String(err)
+      error: err?.message || String(err),
     };
   }
 }
@@ -59,20 +59,31 @@ async function checkAudiveris(binPath) {
 export async function verifyEnglishModel(directory) {
   const bytes = await readFile(join(directory, 'eng.traineddata'));
   const hash = createHash('sha256').update(bytes).digest('hex');
-  if (hash !== ENGLISH_MODEL_SHA256) throw new Error('English OCR data missing or incompatible. Run npm run setup:omr -- --ocr-only. Audiveris requires legacy tessdata, not tessdata_fast.');
+  if (hash !== ENGLISH_MODEL_SHA256)
+    throw new Error(
+      'English OCR data missing or incompatible. Run npm run setup:omr -- --ocr-only. Audiveris requires legacy tessdata, not tessdata_fast.',
+    );
   return hash;
 }
 async function smokeOcr(binPath) {
   const diagnostics = join(ROOT_DIR, '.tools', 'ocr-doctor');
   await mkdir(diagnostics, { recursive: true });
   const output = await mkdtemp(join(diagnostics, 'smoke-'));
-  const { stdout, stderr } = await execFileAsync(binPath, ['-batch', '-transcribe', '-export', '-output', output, '--', join(ROOT_DIR, 'public/samples/first-light.png')], { timeout: 120000, maxBuffer: 4 * 1024 * 1024 });
-  if (/Could not initialize TessBaseAPI|Failed loading language|Missing support for/.test(stdout + stderr)) throw new Error('OCR initialized without working English recognition.');
+  const { stdout, stderr } = await execFileAsync(
+    binPath,
+    ['-batch', '-transcribe', '-export', '-output', output, '--', join(ROOT_DIR, 'public/samples/first-light.png')],
+    { timeout: 120000, maxBuffer: 4 * 1024 * 1024 },
+  );
+  if (/Could not initialize TessBaseAPI|Failed loading language|Missing support for/.test(stdout + stderr))
+    throw new Error('OCR initialized without working English recognition.');
   const { readdir } = await import('node:fs/promises');
-  const mxl = (await readdir(output)).find(name => name.endsWith('.mxl'));
+  const mxl = (await readdir(output)).find((name) => name.endsWith('.mxl'));
   if (!mxl) throw new Error('OCR smoke did not export MusicXML.');
   const entries = unzipSync(new Uint8Array(await readFile(join(output, mxl))));
-  const xml = Object.entries(entries).filter(([name]) => name.endsWith('.xml') && !name.startsWith('META-INF/')).map(([, value]) => strFromU8(value)).join('');
+  const xml = Object.entries(entries)
+    .filter(([name]) => name.endsWith('.xml') && !name.startsWith('META-INF/'))
+    .map(([, value]) => strFromU8(value))
+    .join('');
   if (!/First\s+Light/i.test(xml)) throw new Error('OCR smoke did not recognize the known CC0 title First Light.');
   return output;
 }
@@ -82,7 +93,9 @@ async function main() {
   const binOverride = process.env.AUDIVERIS_BIN;
   const targetBin = binOverride || DEFAULT_BIN;
 
-  console.log(`Audiveris Binary Source: ${binOverride ? 'AUDIVERIS_BIN environment override' : 'Default pinned .tools'}`);
+  console.log(
+    `Audiveris Binary Source: ${binOverride ? 'AUDIVERIS_BIN environment override' : 'Default pinned .tools'}`,
+  );
   console.log(`Audiveris Target Path:   ${targetBin}`);
 
   const status = await checkAudiveris(targetBin);
@@ -95,10 +108,17 @@ async function main() {
     if (!binOverride) {
       await verifyEnglishModel(join(ROOT_DIR, '.tools/audiveris/tessdata'));
       const { stdout, stderr } = await execFileAsync(targetBin, ['-batch'], { timeout: 15000 });
-      if (!/Installed OCR languages:[^\r\n]*\beng\b/.test(stdout + stderr)) throw new Error('Audiveris did not list English OCR support. Run npm run setup:omr -- --ocr-only.');
-      console.log('- English:    pinned legacy model checksum verified; language eng available. Recognition accuracy still requires review.');
-    } else console.log('- English:    custom executable, model checksum not managed; run --ocr-smoke for actual text recognition.');
-    if (process.argv.includes('--ocr-smoke')) console.log(`- OCR smoke:  recognized known CC0 title First Light; diagnostics ${await smokeOcr(targetBin)}`);
+      if (!/Installed OCR languages:[^\r\n]*\beng\b/.test(stdout + stderr))
+        throw new Error('Audiveris did not list English OCR support. Run npm run setup:omr -- --ocr-only.');
+      console.log(
+        '- English:    pinned legacy model checksum verified; language eng available. Recognition accuracy still requires review.',
+      );
+    } else
+      console.log(
+        '- English:    custom executable, model checksum not managed; run --ocr-smoke for actual text recognition.',
+      );
+    if (process.argv.includes('--ocr-smoke'))
+      console.log(`- OCR smoke:  recognized known CC0 title First Light; diagnostics ${await smokeOcr(targetBin)}`);
     console.log('\nCommand syntax for batch processing:');
     console.log(`  ${targetBin} -batch -transcribe -export -output <output_dir> -- <input_file>`);
     process.exit(0);
@@ -120,7 +140,8 @@ async function main() {
   }
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main().catch(err => {
-  console.error('[FAIL] Doctor:', err.message ?? err);
-  process.exitCode = 1;
-});
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url))
+  main().catch((err) => {
+    console.error('[FAIL] Doctor:', err.message ?? err);
+    process.exitCode = 1;
+  });
