@@ -17,3 +17,5 @@
 @import './08-reduced-motion-and-print.css';
 /* 09 new: error boundary fallback */
 @import './09-error-boundary.css';
+/* 10 new: follow-ups (field hints, legibility floors, touch targets) */
+@import './10-follow-ups.css';

@@ -100,7 +100,7 @@ export function LibrarySidebar(props: Props) {
                 >
                   <Icon name="file" />
                   <span>
-                    <strong>{item.title || '未命名乐谱'}</strong>
+                    <strong>{item.title}</strong>
                     <small>
                       {libraryItemStateLabels[item.state]}
                       {item.jobId && scans.scanJobs.some(job => job.id === item.jobId) ? ' · 含扫描档案' : ''}
@@ -163,7 +163,7 @@ export function LibrarySidebar(props: Props) {
             <p>
               乐谱和练习设置自动保存在本机谱库，保存失败会提示重试。浏览器最近历史仅缓存 4 份、每份最多 35
               万字符，不是完整备份。清除最近历史不删除已保存的谱。扫描文件只交给本机 Audiveris，原始图片和 PDF
-              由扫描档案另保留 7 天。重新打开不会自动播放。
+              由扫描档案另保留 {scans.scanRetention} 天。重新打开不会自动播放。
             </p>
           </details>
         </details>

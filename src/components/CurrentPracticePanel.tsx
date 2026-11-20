@@ -1,6 +1,7 @@
 import type { Score } from '../music';
 import { displayPartName } from '../music/part-labels';
 import type { MeasureJump } from '../app/useMeasureJump';
+import { useNumberField } from '../app/useNumberField';
 import type { PracticeSettings } from '../app/usePracticeSettings';
 
 type Props = {
@@ -26,6 +27,29 @@ export function CurrentPracticePanel({
   onPracticeCurrentSegment,
 }: Props) {
   const { loop, loopStart, loopEnd, transpose, metronome, countIn, muted, solo, followRepeats } = practice;
+  const measureCount = score?.measures.length || 1;
+  const startField = useNumberField({
+    value: loopStart,
+    min: 1,
+    max: measureCount,
+    resetKey: score,
+    onCommit: next => {
+      practice.setLoopStart(next);
+      practice.setLoopEnd(previous => Math.max(previous, next));
+    },
+  });
+  const endField = useNumberField({
+    value: loopEnd,
+    min: loopStart,
+    max: measureCount,
+    resetKey: score,
+    onCommit: practice.setLoopEnd,
+  });
+  const loopError = startField.error
+    ? `起始小节：${startField.error}`
+    : endField.error
+      ? `结束小节：${endField.error}`
+      : '';
   return (
     <section id="current-practice" className="current-practice" aria-labelledby="current-practice-title" tabIndex={-1}>
       <div className="section-heading">
@@ -70,18 +94,11 @@ export function CurrentPracticePanel({
                 type="number"
                 aria-label="循环起始小节"
                 min="1"
-                max={score?.measures.length || 1}
-                value={loopStart}
+                max={measureCount}
+                step="1"
+                {...startField.inputProps}
+                aria-describedby={startField.error ? 'loop-range-error' : undefined}
                 disabled={!score}
-                onChange={e => {
-                  if (!e.target.value) return;
-                  const next = Math.max(
-                    1,
-                    Math.min(score?.measures.length || 1, Math.floor(Number(e.target.value)) || 1),
-                  );
-                  practice.setLoopStart(next);
-                  practice.setLoopEnd(previous => Math.max(previous, next));
-                }}
               />
             </label>
             <span>至</span>
@@ -91,20 +108,19 @@ export function CurrentPracticePanel({
                 type="number"
                 aria-label="循环结束小节"
                 min={loopStart}
-                max={score?.measures.length || 1}
-                value={loopEnd}
+                max={measureCount}
+                step="1"
+                {...endField.inputProps}
+                aria-describedby={endField.error ? 'loop-range-error' : undefined}
                 disabled={!score}
-                onChange={e =>
-                  practice.setLoopEnd(
-                    Math.max(
-                      loopStart,
-                      Math.min(score?.measures.length || 1, Math.floor(Number(e.target.value)) || loopStart),
-                    ),
-                  )
-                }
               />
             </label>
           </div>
+          {loopError && (
+            <p id="loop-range-error" className="field-error" role="alert">
+              {loopError}
+            </p>
+          )}
           <button
             className={`toggle-row ${loop ? 'enabled' : ''}`}
             disabled={!score}
