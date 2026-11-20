@@ -5,7 +5,14 @@ import { createApp } from './app.js';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const port = Number(process.env.PORT ?? 4381);
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('PORT 必须是 1 到 65535 的整数。');
-const { app, engine, close } = await createApp({ root });
+// SCORECRAFT_DATA_DIR moves the saved scores and scan jobs to another folder inside the project,
+// e.g. `.data/e2e` for the browser tests, so they do not write into the everyday library.
+const dataBase = process.env.SCORECRAFT_DATA_DIR?.trim();
+const dataDirs = dataBase
+  ? { dataDir: path.resolve(root, dataBase, 'jobs'), libraryDir: path.resolve(root, dataBase, 'library') }
+  : {};
+if (dataBase) console.log(`数据目录：${path.resolve(root, dataBase)}`);
+const { app, engine, close } = await createApp({ root, ...dataDirs });
 const server = app.listen(port, '127.0.0.1', () => {
   console.log(`ScoreCraft 本机服务：http://127.0.0.1:${port}`);
   void engine.health().then((health) => console.log(`Audiveris：${health.available ? '可用' : '不可用'} ${health.version ?? ''} ${health.detail ?? ''}`));

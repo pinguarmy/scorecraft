@@ -32,7 +32,7 @@ npm run dev
 - `tests/music`、`tests/practice`：纯逻辑测试，不需要浏览器和服务。
 - `tests/server`：针对本机服务的测试，用临时目录存数据，不碰日常谱库。
 - `tests/render`：在无界面的 Chrome 里加载 OSMD，检查渲染兼容和光标。不启动服务。说明见 [tests/render/README.md](<tests/render/README.md>)。
-- `tests/e2e`：Playwright 测试整个应用。需要先 `npm run build`。没有设置 `SCORECRAFT_URL` 时，Playwright 自己启动 `npm start`，端口默认 4382（`SCORECRAFT_E2E_PORT`）。需要 UTF-8 语言环境，例如 `LANG=C.UTF-8`。没装 Audiveris 时，两个真实识谱用例会跳过，这是正常的。
+- `tests/e2e`：Playwright 测试整个应用。需要先 `npm run build`。没有设置 `SCORECRAFT_URL` 时，Playwright 自己启动 `npm start`，端口默认 4382（`SCORECRAFT_E2E_PORT`），数据存到每次清空的 `.data/e2e`（`SCORECRAFT_DATA_DIR`），不碰日常谱库。需要 UTF-8 语言环境，例如 `LANG=C.UTF-8`。没装 Audiveris 时，两个真实识谱用例会跳过，这是正常的。
 
 渲染回归和浏览器测试默认使用已安装的 Google Chrome。要用别的 Chromium 或 Chrome，设置 `SCORECRAFT_BROWSER_PATH` 为可执行文件路径：
 

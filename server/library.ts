@@ -44,8 +44,8 @@ function metadata(document: SavedDocument) {
   const { id, title, composer, source, jobId, opened, updatedAt, xmlBytes } = document;
   return { id, title, composer, source, ...(jobId ? { jobId } : {}), opened, updatedAt, xmlBytes };
 }
-export async function createLibraryRouter(options: { root: string }) {
-  const prepared = await prepareDataRoot(path.resolve(options.root), path.join(path.resolve(options.root), '.data/library'));
+export async function createLibraryRouter(options: { root: string; dataDir?: string }) {
+  const prepared = await prepareDataRoot(path.resolve(options.root), path.resolve(options.dataDir ?? path.join(path.resolve(options.root), '.data/library')));
   const { root, data } = prepared;
   await chmod(data, 0o700);
   const router = express.Router();

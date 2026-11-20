@@ -19,7 +19,10 @@ export { RECOGNITION_REVISION, type Job } from './job-store.js';
 
 export type AppOptions = {
   root: string;
+  /** Where scan jobs are kept. Defaults to `<root>/.data/jobs`; must be inside the project directory. */
   dataDir?: string;
+  /** Where saved scores are kept. Defaults to `<root>/.data/library`; must be inside the project directory. */
+  libraryDir?: string;
   distDir?: string;
   engine?: RecognitionEngine;
   maxUploadBytes?: number;
@@ -67,7 +70,13 @@ export async function createApp(options: AppOptions) {
   app.disable('x-powered-by');
   app.use(requestGuard());
   app.use(createInfoRouter({ root, engine, maxUploadBytes }));
-  app.use('/api/library', await createLibraryRouter({ root: canonicalRoot }));
+  app.use(
+    '/api/library',
+    await createLibraryRouter({
+      root: canonicalRoot,
+      ...(options.libraryDir ? { dataDir: path.resolve(canonicalRoot, path.relative(root, path.resolve(options.libraryDir))) } : {}),
+    }),
+  );
   app.use(createRecognizeRouter(jobs));
   app.use(createRetryRouter(jobs));
   app.use(createJobsRouter(jobs));
