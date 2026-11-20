@@ -1,11 +1,19 @@
 # Files included in the ScoreCraft source ZIP, one per line.
+.editorconfig
 .gitattributes
+.github/dependabot.yml
+.github/workflows/ci.yml
 .gitignore
+.nvmrc
+.prettierignore
+.prettierrc
+CONTRIBUTING.md
 LICENSE
 README.md
 THIRD_PARTY_NOTICES.md
 docs/ARCHITECTURE.md
 docs/NOTATION_SUPPORT.md
+eslint.config.js
 index.html
 package-lock.json
 package.json
@@ -100,6 +108,7 @@ public/samples/first-light.musicxml
 public/samples/first-light.pdf
 public/samples/first-light.png
 public/samples/repeat-study.musicxml
+scripts/check-source-manifest.mjs
 scripts/dev.mjs
 scripts/doctor.mjs
 scripts/inspect-audio.mjs
@@ -135,6 +144,7 @@ src/music/types.ts
 src/practice/library.ts
 src/practice/session.ts
 src/styles.css
+tests/browser.ts
 tests/e2e/cursor.spec.ts
 tests/e2e/excerpt-count-in.spec.ts
 tests/e2e/follow-cover.spec.ts
