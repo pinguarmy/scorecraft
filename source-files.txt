@@ -255,6 +255,7 @@ tests/render/open-octave.test.ts
 tests/server/api.test.ts
 tests/server/auto-cover.test.ts
 tests/server/cover-retry.test.ts
+tests/server/data-dir.test.ts
 tests/server/dedup.test.ts
 tests/server/dot-path.test.ts
 tests/server/engine-error.test.ts

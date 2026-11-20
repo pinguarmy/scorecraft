@@ -83,6 +83,7 @@ export class JobStore {
   readonly jobs = new Map<string, Job>();
   readonly deleting = new Set<string>();
   private readonly readers = new Map<string, number>();
+  private readonly unpinWaiters = new Map<string, Set<() => void>>();
   private readonly options: JobStoreOptions;
 
   constructor(options: JobStoreOptions) {
@@ -108,8 +109,34 @@ export class JobStore {
 
   unpin(id: string): void {
     const count = (this.readers.get(id) ?? 1) - 1;
-    if (count) this.readers.set(id, count);
-    else this.readers.delete(id);
+    if (count) {
+      this.readers.set(id, count);
+      return;
+    }
+    this.readers.delete(id);
+    const waiters = this.unpinWaiters.get(id);
+    this.unpinWaiters.delete(id);
+    waiters?.forEach((resume) => resume());
+  }
+
+  /**
+   * Resolves once no reader holds the job, or after `graceMs`, whichever comes first. A reader releases its pin
+   * when its response has closed, which is a moment after the client has received the last byte; a client that
+   * deletes the job right after reading it would otherwise be told the job is still being read.
+   */
+  whenUnpinned(id: string, graceMs: number): Promise<void> {
+    if (!this.readers.has(id)) return Promise.resolve();
+    return new Promise((resolve) => {
+      const waiters = this.unpinWaiters.get(id) ?? new Set<() => void>();
+      this.unpinWaiters.set(id, waiters);
+      const resume = () => {
+        clearTimeout(timer);
+        waiters.delete(resume);
+        resolve();
+      };
+      const timer = setTimeout(resume, graceMs);
+      waiters.add(resume);
+    });
   }
 
   isPinned(id: string): boolean {

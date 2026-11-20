@@ -101,15 +101,18 @@ export function createRetryRouter(context: JobRouteContext) {
         res.status(404).json({ message: '完整原稿不存在，不能重试。' });
         return;
       }
-      let bytes: Buffer;
+      const retryable = original.name.endsWith('.pdf') && original.size <= maxUploadBytes && original.size > 0;
+      let bytes: Buffer | undefined;
       try {
-        if (!original.name.endsWith('.pdf') || original.size > maxUploadBytes || original.size <= 0) {
-          res.status(400).json({ message: '跳过封面重试仅支持有效的多页 PDF。' });
-          return;
-        }
-        bytes = await original.handle.readFile();
+        if (retryable) bytes = await original.handle.readFile();
       } finally {
         await original.handle.close();
+      }
+      // Answer only after the handle is closed: the gate below is then released in the same tick as the
+      // response, so a client that retries the moment it reads this 400 is not told the queue is full.
+      if (!bytes) {
+        res.status(400).json({ message: '跳过封面重试仅支持有效的多页 PDF。' });
+        return;
       }
       const archivePath = path.join(directory, 'output/input.omr');
       await assertPlainPath(canonicalRoot, archivePath);
