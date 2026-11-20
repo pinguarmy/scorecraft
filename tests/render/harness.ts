@@ -1,3 +1,4 @@
+import { browserLaunchOptions } from '../browser.ts';
 import { chromium } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -6,7 +7,7 @@ import ts from 'typescript';
 export async function renderWithOsmd(xml: string, repair: boolean) {
   const helper = await readFile(resolve('src/components/render-compat.ts'), 'utf8');
   const compiled = ts.transpileModule(helper, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
-  const browser = await chromium.launch({ channel: 'chrome', headless: true });
+  const browser = await chromium.launch(browserLaunchOptions());
   try {
     const page = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
     const logs: string[] = [];

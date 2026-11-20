@@ -1,3 +1,4 @@
+import { browserLaunchOptions } from '../browser.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { chromium } from '@playwright/test';
@@ -11,7 +12,7 @@ const xml = `<score-partwise version="4.0"><part-list><score-part id="P"><part-n
 
 test('source-order cursor cannot follow an ending jump and rewinds from late bars or end without changing repeat data', async () => {
   const compiled = ts.transpileModule(await readFile('src/components/render-compat.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
-  const browser = await chromium.launch({ channel: 'chrome', headless: true });
+  const browser = await chromium.launch(browserLaunchOptions());
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     await page.setContent('<style>*{box-sizing:border-box}#frame{width:1000px;position:relative}#host{width:100%;padding:15px 25px 30px}#host svg{max-width:100%;height:auto}#host>div{max-width:100%}</style><div id="frame"><div id="host"></div></div>');

@@ -12,10 +12,11 @@ async function prepare(page: any) {
 }
 test.beforeAll(async () => { await mkdir(out, { recursive: true }); });
 
-test('live playback and downloaded WAV use local stereo piano recordings, never triangle notes', async ({ page }) => {
+test('live playback and downloaded WAV use local stereo piano recordings, never triangle notes', async ({ page, baseURL }) => {
   const remote: string[] = []; const sampleRequests: string[] = [];
+  const appOrigin = new URL(baseURL ?? 'http://127.0.0.1:4381').origin;
   page.on('request', request => {
-    if (/^https?:/.test(request.url()) && new URL(request.url()).origin !== new URL(process.env.SCORECRAFT_URL || 'http://127.0.0.1:4381').origin) remote.push(request.url());
+    if (/^https?:/.test(request.url()) && new URL(request.url()).origin !== appOrigin) remote.push(request.url());
     if (request.url().endsWith('.mp3')) sampleRequests.push(request.url());
   });
   await prepare(page);
