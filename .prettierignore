@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.data/
+.tools/
+playwright-report/
+test-results/
+public/
+package-lock.json
+LICENSE
+UPSTREAM-*
+*.musicxml
+source-files.txt

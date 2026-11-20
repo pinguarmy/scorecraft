@@ -52,13 +52,15 @@ PDF 和照片识谱主要面向清晰的印刷五线谱。手写谱、简谱、�
 `npm run dev` 启动开发环境，浏览器打开 <http://127.0.0.1:4380>。[代码和数据怎么走](<docs/ARCHITECTURE.md>)解释了前端、音频和本机服务的分工。
 
 ```sh
-npm test
+npm run check
 npm run build
 ```
 
-浏览器测试需安装 Google Chrome。请用干净的工作副本启动测试服务，避免向日常使用的谱库写入测试乐谱。在一个终端运行 `PORT=4382 npm start`，另一个终端运行 `SCORECRAFT_URL=http://127.0.0.1:4382 npm run test:e2e`。没装 Audiveris 时，真实 PDF 和图片识谱用例会跳过。
+`npm run check` 依次运行类型检查、ESLint、单元测试（`tests/music`、`tests/practice`、`tests/server`）和源码清单检查，不需要浏览器。`npm run format:check` 检查 Prettier 格式，不包含在 `check` 里。
 
-运行 `npm run package:source` 可生成 `.data/source.zip`。应用内的“下载本实例源码”会提供该文件。脚本只打包 [source-files.txt](<source-files.txt>) 里逐项列出的文件，不带用户乐谱、扫描原稿、日志、依赖或识谱引擎。新增项目文件时，也要更新这份清单。
+渲染回归（`npm run test:render`）和浏览器测试（`npm run test:e2e`）需要 Google Chrome。用别的 Chromium 或 Chrome 时，把 `SCORECRAFT_BROWSER_PATH` 设为它的可执行文件路径。浏览器测试会自己启动 `npm start`，端口默认 4382，可用 `SCORECRAFT_E2E_PORT` 修改。运行前先 `npm run build`，并确保用的是干净的工作副本，避免向日常使用的谱库写入测试乐谱。要测试自己启动的服务，设置 `SCORECRAFT_URL`。需要 UTF-8 语言环境（例如 `LANG=C.UTF-8`）。没装 Audiveris 时，真实 PDF 和图片识谱用例会跳过。详见[贡献指南](<CONTRIBUTING.md>)。
+
+运行 `npm run package:source` 可生成 `.data/source.zip`。应用内的“下载本实例源码”会提供该文件。脚本只打包 [source-files.txt](<source-files.txt>) 里逐项列出的文件，不带用户乐谱、扫描原稿、日志、依赖或识谱引擎。新增或删除项目文件后，运行 `npm run check:manifest -- --write` 重新生成这份清单，`npm run check:manifest` 会在清单和 `git ls-files` 不一致时报错。
 
 ## 许可
 

@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # One e2e spec asserts a non-ASCII download filename and needs a UTF-8 locale.
+      LANG: C.UTF-8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Source manifest
+        run: npm run check:manifest
+
+      - name: Build
+        run: npm run build
+
+      # Uses the Google Chrome preinstalled on ubuntu-latest (channel "chrome").
+      - name: Renderer tests
+        run: npm run test:render
+
+      # Playwright starts `npm start` on port 4382 itself. The two Audiveris specs skip when the engine is absent.
+      - name: End-to-end tests
+        run: npx playwright test --trace off
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
