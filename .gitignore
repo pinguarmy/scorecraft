@@ -10,3 +10,4 @@ evidence/
 .codebase-memory/
 .env
 .env.*
+.claude/worktrees/
