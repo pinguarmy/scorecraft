@@ -2,7 +2,7 @@
 
 ## 准备环境
 
-需要 Node.js 22（见 `.nvmrc`）。
+需要 Node.js 22.13 以上的 22.x，或 24 及更新版本。`.nvmrc` 和 CI 使用 Node.js 22 的最新补丁。
 
 ```sh
 npm ci

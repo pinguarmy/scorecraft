@@ -255,7 +255,7 @@ export function sanitizeDocument(raw: unknown): RecentDocument | null {
 export async function loadDocuments(storage: StorageLike): Promise<RecentDocument[]> {
   if (!storage || typeof storage.getItem !== 'function') return [];
 
-  let v2Raw: string | null = null;
+  let v2Raw: string | null;
   try {
     v2Raw = storage.getItem(SESSION_KEY);
   } catch {
@@ -301,8 +301,8 @@ export async function loadDocuments(storage: StorageLike): Promise<RecentDocumen
   }
 
   // v2 missing, malformed, or non-array: migrate from legacy v1
-  let v1RecentRaw: string | null = null;
-  let v1PracticeRaw: string | null = null;
+  let v1RecentRaw: string | null;
+  let v1PracticeRaw: string | null;
   try {
     v1RecentRaw = storage.getItem(LEGACY_RECENT_KEY);
     v1PracticeRaw = storage.getItem(LEGACY_SETTINGS_KEY);

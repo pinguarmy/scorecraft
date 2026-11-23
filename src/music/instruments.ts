@@ -113,6 +113,7 @@ export async function loadInstrumentBank(context: BaseAudioContext, id: Instrume
             failed = true;
             throw new Error(
               `${INSTRUMENTS.find((item) => item.id === id)!.label}采样加载失败，请重试。${error instanceof Error ? error.message : ''}`,
+              { cause: error },
             );
           }
         }

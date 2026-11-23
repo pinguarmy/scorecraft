@@ -107,7 +107,7 @@ export async function renderPianoWav(score: Score, options: PianoWavOptions = {}
     const rendered = await context.startRendering();
     return encodeStereoWav(rendered, frames);
   } catch (error) {
-    throw new Error(`钢琴 WAV 渲染失败：${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(`钢琴 WAV 渲染失败：${error instanceof Error ? error.message : String(error)}`, { cause: error });
   } finally {
     for (const source of sources) {
       try {

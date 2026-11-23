@@ -74,6 +74,7 @@ export function loadPianoBank(context: BaseAudioContext): Promise<PianoBank> {
             failed = true;
             throw new Error(
               `本机钢琴采样加载失败（${KEYS[index]}）。请检查采样资源后重新播放。${error instanceof Error ? error.message : ''}`,
+              { cause: error },
             );
           }
         }

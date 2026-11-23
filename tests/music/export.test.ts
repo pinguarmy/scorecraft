@@ -240,7 +240,7 @@ test('large MIDI tracks avoid function argument limits and retain exact note tim
     let tick = 0;
     const variable = () => {
       let n = 0;
-      let b = 0;
+      let b: number;
       do {
         b = midi[offset++];
         n = n * 128 + (b & 127);
@@ -423,8 +423,8 @@ describe('MIDI channel allocation, overlapping voices, and percussion semantics'
       [];
     const numTracks = view.getUint16(10);
     const variable = () => {
-      let n = 0,
-        b = 0;
+      let n = 0;
+      let b: number;
       do {
         b = bytes[offset++];
         n = n * 128 + (b & 127);

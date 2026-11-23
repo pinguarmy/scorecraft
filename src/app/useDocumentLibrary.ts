@@ -76,7 +76,7 @@ export function useDocumentLibrary(setNotice: (notice: Notice) => void) {
   const ensureDocuments = useCallback(() => {
     if (!hydrationRef.current) {
       hydrationRef.current = (async () => {
-        let docs: RecentDocument[] = [];
+        let docs: RecentDocument[];
         try {
           docs = await loadDocuments(browserStorage);
         } catch {

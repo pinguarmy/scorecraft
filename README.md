@@ -4,7 +4,7 @@
 
 ## 先跑起来
 
-从 [GitHub Releases](https://github.com/pinguarmy/scorecraft/releases/latest) 下载 `scorecraft-source.zip` 并解压，也可以克隆仓库。需要 [Node.js](https://nodejs.org/) 22 或更新版本。在项目目录运行：
+从 [GitHub Releases](https://github.com/pinguarmy/scorecraft/releases/latest) 下载 `scorecraft-source.zip` 并解压，也可以克隆仓库。需要 [Node.js](https://nodejs.org/) 22.13 以上的 22.x，或 24 及更新版本。在项目目录运行：
 
 ```sh
 npm ci

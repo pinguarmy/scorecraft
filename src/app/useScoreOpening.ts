@@ -126,6 +126,7 @@ export function useScoreOpening({
       // older import/cache and then offer to overwrite the unread version.
       throw new Error(
         `本机谱库读取失败，未打开这份谱，以免覆盖已保存的校正版。请检查本机服务后重新打开。${error instanceof Error ? error.message : ''}`,
+        { cause: error },
       );
     }
     const saved = pending ?? remote ?? recentRef.current.find((item) => item.id === id);
